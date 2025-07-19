@@ -1227,9 +1227,6 @@ class DashboardGenerator:
         if 'display' not in config:
             config['display'] = {}
         
-        # Override orientation with environment variable if present
-        if os.getenv('DASHBOARD_ORIENTATION'):
-            config['display']['orientation'] = os.getenv('DASHBOARD_ORIENTATION')
 
         return config
 

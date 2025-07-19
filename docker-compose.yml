@@ -16,7 +16,6 @@ services:
       - CANVAS_API_KEY=${CANVAS_API_KEY:-}
       - WEATHER_LOCATION=${WEATHER_LOCATION:-Winston-Salem,NC,US}
       - WEATHER_UNITS=${WEATHER_UNITS:-imperial}
-      - DASHBOARD_ORIENTATION=${DASHBOARD_ORIENTATION:-horizontal}
       - PORT=${PORT:-8080}
       - PYTHONUNBUFFERED=1
     volumes:
