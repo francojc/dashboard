@@ -1297,6 +1297,200 @@ body {
   color: var(--text-secondary);
   opacity: 0.8;
   font-style: italic;
+}
+
+/* Horizontal Orientation Layout */
+.orientation-horizontal {
+  --grid-gap-horizontal: 20px;
+  --hero-height: 15vh;
+  --content-height: calc(85vh - var(--spacing-lg));
+}
+
+.orientation-horizontal .hero-section {
+  height: var(--hero-height);
+  margin-bottom: 0;
+  border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+  padding-bottom: var(--spacing-sm);
+}
+
+.orientation-horizontal .content-grid {
+  grid-template-columns: repeat(4, 1fr);
+  height: var(--content-height);
+  gap: var(--grid-gap-horizontal);
+}
+
+.orientation-horizontal .left-column,
+.orientation-horizontal .right-column {
+  display: contents;
+}
+
+/* Horizontal Hero Layout */
+.orientation-horizontal .time-display {
+  text-align: center;
+}
+
+.orientation-horizontal .current-time {
+  font-size: 3.5em;
+}
+
+.orientation-horizontal .weather-hero {
+  flex-direction: row;
+  gap: var(--spacing-md);
+}
+
+.orientation-horizontal .weather-main {
+  text-align: left;
+}
+
+.orientation-horizontal .main-temp {
+  font-size: 2.8em;
+}
+
+/* Horizontal Card Adaptations */
+.orientation-horizontal .card {
+  height: 100%;
+  overflow-y: auto;
+}
+
+/* Calendar Horizontal Layout */
+.orientation-horizontal .calendar-content {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100%;
+}
+
+.orientation-horizontal .month-grid {
+  grid-template-columns: 1fr;
+  gap: var(--spacing-sm);
+}
+
+.orientation-horizontal .month-container {
+  padding: var(--spacing-sm);
+}
+
+.orientation-horizontal .mini-calendar {
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+}
+
+.orientation-horizontal .mini-day {
+  font-size: 0.6em;
+  aspect-ratio: 1;
+}
+
+/* Weather Cards Horizontal */
+.orientation-horizontal .forecast-item {
+  grid-template-columns: 60px 40px 1fr 120px;
+  padding: 6px 0;
+}
+
+.orientation-horizontal .forecast-day {
+  font-size: 0.8em;
+}
+
+.orientation-horizontal .forecast-temp {
+  font-size: 0.85em;
+}
+
+/* Traffic Map Horizontal */
+.orientation-horizontal .traffic-content {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  height: 100%;
+}
+
+.orientation-horizontal .travel-times {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.orientation-horizontal .travel-time-item {
+  padding: var(--spacing-xs);
+  font-size: 0.8em;
+}
+
+/* Canvas Cards Horizontal */
+.orientation-horizontal .canvas-assignments-list,
+.orientation-horizontal .canvas-grading-list {
+  max-height: none;
+}
+
+.orientation-horizontal .assignment-item,
+.orientation-horizontal .grading-item {
+  padding: var(--spacing-xs);
+  margin-bottom: var(--spacing-xs);
+}
+
+.orientation-horizontal .assignment-title,
+.orientation-horizontal .grading-title {
+  font-size: 0.85em;
+}
+
+/* Full-width Weather Chart Horizontal */
+.orientation-horizontal .full-width-weather {
+  grid-column: 1 / -1;
+  order: -1;
+  margin-bottom: var(--spacing-md);
+}
+
+.orientation-horizontal .full-width-weather .chart-area {
+  height: 60px;
+}
+
+/* News Ticker Horizontal */
+.orientation-horizontal .news-ticker {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40px;
+  font-size: 0.9em;
+}
+
+/* Responsive Horizontal Adjustments */
+@media (orientation: landscape) and (min-width: 1400px) {
+  .orientation-auto {
+    --grid-gap-horizontal: 20px;
+    --hero-height: 15vh;
+    --content-height: calc(85vh - var(--spacing-lg));
+  }
+  
+  .orientation-auto .hero-section {
+    height: var(--hero-height);
+    margin-bottom: 0;
+    border-bottom: 1px solid rgba(100, 255, 218, 0.1);
+    padding-bottom: var(--spacing-sm);
+  }
+  
+  .orientation-auto .content-grid {
+    grid-template-columns: repeat(4, 1fr);
+    height: var(--content-height);
+    gap: var(--grid-gap-horizontal);
+  }
+  
+  .orientation-auto .left-column,
+  .orientation-auto .right-column {
+    display: contents;
+  }
+}
+
+/* Horizontal Orientation Mobile Fallback */
+@media (max-width: 1024px) {
+  .orientation-horizontal .content-grid {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  
+  .orientation-horizontal .current-time {
+    font-size: 3em;
+  }
+  
+  .orientation-horizontal .main-temp {
+    font-size: 2.2em;
+  }
+}
   margin-top: 2px;
 }
 

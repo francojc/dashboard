@@ -9,7 +9,7 @@
     <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
     <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet'>
 </head>
-<body>
+<body class="orientation-{{ config.orientation | default('vertical') }}">
     <!-- Weather Alert Banner -->
     {% if weather and weather.alerts and weather.alerts|length > 0 %}
     {% set alert = weather.alerts[0] %}

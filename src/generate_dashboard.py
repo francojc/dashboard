@@ -1222,6 +1222,14 @@ class DashboardGenerator:
             config['weather']['location'] = os.getenv('WEATHER_LOCATION')
         if os.getenv('WEATHER_UNITS'):
             config['weather']['units'] = os.getenv('WEATHER_UNITS')
+        
+        # Ensure display config exists
+        if 'display' not in config:
+            config['display'] = {}
+        
+        # Override orientation with environment variable if present
+        if os.getenv('DASHBOARD_ORIENTATION'):
+            config['display']['orientation'] = os.getenv('DASHBOARD_ORIENTATION')
 
         return config
 

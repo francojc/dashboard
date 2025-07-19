@@ -100,6 +100,7 @@ The dashboard works on any device with a web browser. Here are setup instruction
 #### Desktop/Laptop Displays
 
 **Chrome/Edge/Firefox (Full-screen kiosk):**
+
 ```bash
 # Windows
 chrome.exe --kiosk --noerrdialogs --disable-infobars --incognito http://your-server:8080
@@ -129,11 +130,13 @@ google-chrome --kiosk --noerrdialogs --disable-infobars --incognito http://your-
 #### Smart TVs
 
 **Android TV/Google TV:**
+
 1. Install Chrome or Firefox from Google Play Store
 2. Navigate to dashboard URL
 3. Bookmark for easy access
 
 **Samsung Tizen/LG webOS:**
+
 1. Use built-in browser
 2. Navigate to dashboard URL
 3. Add to favorites
