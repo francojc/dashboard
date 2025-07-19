@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Dashboard Generator for Raspberry Pi Kiosk
+Universal Dashboard Generator
 Fetches data from various sources and generates a static HTML dashboard
 """
 

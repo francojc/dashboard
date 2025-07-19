@@ -1,85 +1,75 @@
-# Pi Dashboard Web Service
+# Universal Dashboard Web Service
 
-A modern dashboard web service designed to run in Docker and be accessed by Raspberry Pi devices in kiosk mode. Features a card-based design with weather, calendar, local information, and news feeds with automatic updates.
+A modern, responsive dashboard web service designed to display on any internet-connected device. Features a card-based design with weather, calendar, local information, and news feeds with automatic updates.
 
 ## Features
 
 ### Architecture & Performance
 
-- **Web Service Architecture**: Runs in Docker on powerful hardware, accessed by Pi via network
-- **Server-Side Rendering**: Static HTML generation reduces client load
-- **Multiple Pi Support**: Single dashboard service can serve multiple displays
+- **Universal Compatibility**: Runs on any device with a web browser
+- **Server-Side Rendering**: Static HTML generation for optimal performance
+- **Multi-Device Support**: Single dashboard service can serve multiple displays
 - **Auto-Updates**: Refreshes data every 15 minutes
+- **Responsive Design**: Adapts to various screen sizes and orientations
 
 ### Design & Display
 
 - **Modern Card-Based Design**: Glassmorphism effects with performance optimizations
 - **Smart Calendar**: Complete month view with adjacent month days
-- **Responsive**: Optimized for vertical/portrait displays
+- **Device-Adaptive**: Optimized for tablets, smartphones, desktop monitors, and smart TVs
 
 ### Integrations
 
-- **Real Weather Data**: Current conditions, 5-day forecast, and air quality from OpenWeatherMap (free tier)
+- **Real Weather Data**: Current conditions, 5-day forecast, and air quality from OpenWeatherMap
 - **RSS Feed Support**: Dual news and events tickers with smooth animations
 - **Google Calendar**: Optional OAuth 2.0 integration for calendar events
+- **Canvas LMS**: Educational dashboard features for instructors and students
 - **Traffic Patterns**: Local traffic data for commute planning
 
 ### Security & Access
 
-- **Secure Remote Access**: Tailscale integration for secure remote viewing
+- **Secure Remote Access**: Optional Tailscale integration for secure remote viewing
+- **Environment-Based Configuration**: API keys managed securely
+- **No Client Dependencies**: Pure HTML/CSS dashboard with no JavaScript requirements
 
 ## Architecture
 
 ```
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│   Docker Host   │────▶│   Web Service    │────▶│  Raspberry Pi   │
-│  (Server/NAS)   │     │  (Port 8080)     │     │  (Kiosk Mode)   │
+│   Docker Host   │────▶│   Web Service    │────▶│  Display Device │
+│  (Server/NAS)   │     │  (Port 8080)     │     │  (Any Browser)  │
 └─────────────────┘     └──────────────────┘     └─────────────────┘
         │                        │                        │
         ▼                        ▼                        ▼
 ┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│   External APIs │     │  Static HTML     │     │   Midori/       │
-│  - Weather      │     │  (Auto-refresh)  │     │   Chromium      │
-│  - RSS Feeds    │     │                  │     │   (Fullscreen)  │
+│   External APIs │     │  Static HTML     │     │   Web Browser   │
+│  - Weather      │     │  (Auto-refresh)  │     │   (Fullscreen)  │
+│  - RSS Feeds    │     │                  │     │                 │
 │  - Calendar     │     │                  │     │                 │
+│  - Canvas LMS   │     │                  │     │                 │
 └─────────────────┘     └──────────────────┘     └─────────────────┘
                                                           │
                          Optional: Tailscale             ▼
                         ┌──────────────────┐     ┌─────────────────┐
-                        │    TSDProxy      │     │   Display       │
-                        │ (Reverse Proxy)  │     │  (Vertical)     │
+                        │    TSDProxy      │     │     Display     │
+                        │ (Reverse Proxy)  │     │   (Any Size)    │
                         └──────────────────┘     └─────────────────┘
 ```
 
-## Requirements
-
-### Docker Host (Server/NAS/Desktop)
-
-- **Hardware**: Any x86/ARM64 device with Docker support
-- **Software**: Docker and Docker Compose
-- **Network**: Internet access for API calls
-- **Optional**: Tailscale account for secure remote access
-
-### Raspberry Pi (Display Client)
-
-- **Hardware**: Raspberry Pi 2B+ or newer, 8GB+ SD Card, Display
-- **Software**: Raspberry Pi OS Lite, X11, Midori or Chromium
-- **Network**: WiFi or Ethernet access to Docker host
-
 ## Quick Start
 
-## Step 1: Deploy Dashboard Service
+### Step 1: Deploy Dashboard Service
 
-Deploy the dashboard web service on a powerful device (server, NAS, desktop):
+Deploy the dashboard web service on any system with Docker support:
 
 ```bash
 # Clone repository
-git clone https://github.com/francojc/pi-dashboard-docker.git
-cd pi-dashboard-docker
+git clone https://github.com/your-username/universal-dashboard.git
+cd universal-dashboard
 
 # Set up environment
 cp .env.example .env
-# Edit .env with your OpenWeatherMap API key
+# Edit .env with your API keys
 
 # Deploy with Docker
 docker compose up -d
@@ -103,322 +93,230 @@ docker compose down
 git pull && docker compose up -d --build
 ```
 
-### Remote Access with Tailscale (Recommended)
+### Step 2: Configure Display Devices
 
-For secure access across networks, set up Tailscale:
+The dashboard works on any device with a web browser. Here are setup instructions for common use cases:
 
-1. **Install Tailscale on Docker host:**
+#### Desktop/Laptop Displays
+
+**Chrome/Edge/Firefox (Full-screen kiosk):**
+```bash
+# Windows
+chrome.exe --kiosk --noerrdialogs --disable-infobars --incognito http://your-server:8080
+
+# macOS
+open -a "Google Chrome" --args --kiosk --noerrdialogs --disable-infobars --incognito http://your-server:8080
+
+# Linux
+google-chrome --kiosk --noerrdialogs --disable-infobars --incognito http://your-server:8080
+```
+
+#### Tablets and Smartphones
+
+1. Open your preferred browser
+2. Navigate to `http://your-server:8080`
+3. Add to home screen for easy access
+4. Use full-screen mode in browser settings
+
+**iOS Safari:**
+- Tap Share → Add to Home Screen
+- Open from home screen for full-screen experience
+
+**Android Chrome:**
+- Menu → Add to Home screen
+- Menu → Settings → Site settings → Full screen
+
+#### Smart TVs
+
+**Android TV/Google TV:**
+1. Install Chrome or Firefox from Google Play Store
+2. Navigate to dashboard URL
+3. Bookmark for easy access
+
+**Samsung Tizen/LG webOS:**
+1. Use built-in browser
+2. Navigate to dashboard URL
+3. Add to favorites
+
+#### Raspberry Pi (Optional Setup)
+
+For users who want to use a Raspberry Pi as a dedicated display:
+
+1. **Install Raspberry Pi OS Lite**
+2. **Install minimal browser setup:**
    ```bash
-   # Follow instructions at https://tailscale.com/download
+   sudo apt update && sudo apt install -y \
+       xserver-xorg xinit matchbox-window-manager \
+       midori unclutter
+   ```
+3. **Create simple kiosk script:**
+   ```bash
+   cat > ~/start_dashboard.sh << 'EOF'
+   #!/bin/bash
+   xset -dpms; xset s off; xset s noblank
+   unclutter -idle 0.5 -root &
+   matchbox-window-manager -use_titlebar no &
+   sleep 2
+   midori -e Fullscreen -a http://your-server:8080
+   EOF
+   chmod +x ~/start_dashboard.sh
+   ```
+
+### Remote Access with Tailscale (Optional)
+
+For secure access across networks:
+
+1. **Install Tailscale on your server:**
+   ```bash
    curl -fsSL https://tailscale.com/install.sh | sh
    sudo tailscale up
    ```
 
 2. **Configure TSDProxy for easy access:**
    ```bash
-   # Install TSDProxy (Tailscale reverse proxy)
-   go install github.com/almeidapaulopt/tsdproxy@latest
-   
-   # Create config for dashboard
-   tsdproxy --from dashboard --to localhost:8080
+   # Labels in docker-compose.yml already configured for TSDProxy
+   # Access at: https://dashboard-518.your-tailnet.ts.net
    ```
 
-3. **Access dashboard at:** `https://dashboard.your-tailnet.ts.net`
+## Configuration
 
-### Google Calendar (Optional)
+### Environment Variables
 
-To enable Google Calendar integration:
+Create a `.env` file with your API keys:
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create OAuth 2.0 credentials (Desktop application)
-3. Add `http://localhost:8081` as authorized redirect URI
-4. Update `.env` with your credentials
-5. Run `python src/generate_dashboard.py` once to authenticate
+```bash
+# Required for weather data
+OPENWEATHER_API_KEY=your_openweather_api_key
 
-Then specify your calendar ID(s) in `src/config/config.json`:
+# Optional integrations
+GOOGLE_CALENDAR_CLIENT_ID=your_google_client_id
+GOOGLE_CALENDAR_CLIENT_SECRET=your_google_client_secret
+GOOGLE_MAPS_API_KEY=your_maps_api_key
+MAPBOX_API_KEY=your_mapbox_api_key
+CANVAS_BASE_URL=https://your-institution.instructure.com
+CANVAS_API_KEY=your_canvas_api_key
+
+# Display settings
+WEATHER_LOCATION=Winston-Salem,NC,US
+WEATHER_UNITS=imperial
+PORT=8080
+```
+
+### Dashboard Configuration
+
+Edit `src/config/config.json` to customize:
+
+#### Weather Settings
+```json
+{
+  "weather": {
+    "location": "Your City,State,Country",
+    "units": "metric",
+    "timezone": "America/New_York"
+  }
+}
+```
+
+#### RSS Feeds
+```json
+{
+  "rss_feeds": {
+    "BBC News": "http://feeds.bbci.co.uk/news/rss.xml",
+    "Tech News": "https://techcrunch.com/feed/",
+    "Your Local News": "https://your-local-news.com/rss"
+  }
+}
+```
+
+#### Google Calendar Integration
+
+1. Create OAuth 2.0 credentials at [Google Cloud Console](https://console.cloud.google.com/)
+2. Add your dashboard URL as authorized redirect URI
+3. Update `.env` with credentials
+4. Configure calendars in `config.json`:
 
 ```json
 {
   "calendar": {
-    "ids": ["calendar_id_1", "calendar_id_2"],
-    "timezone": "Europe/London",
-    "max_events": 5
+    "calendars": {
+      "personal": {
+        "id": "your_calendar_id@group.calendar.google.com",
+        "name": "Personal",
+        "color": "#F4B400",
+        "enabled": true
+      }
+    },
+    "timezone": "America/New_York"
   }
 }
 ```
 
-## Step 2: Configure Raspberry Pi Kiosk
+## Device-Specific Optimizations
 
-Set up your Raspberry Pi as a kiosk display client:
+### Performance Settings
 
-### 1. Install Raspberry Pi OS
-
-1. Download [Raspberry Pi OS Lite](https://www.raspberrypi.org/software/operating-systems/) (32-bit)
-2. Flash to SD card using [Raspberry Pi Imager](https://www.raspberrypi.org/software/)
-3. Enable SSH by creating empty `ssh` file in boot partition
-4. Boot Pi and SSH in: `ssh pi@raspberrypi.local`
-
-### 2. Basic System Setup
-
-```bash
-# Update system
-sudo apt update && sudo apt upgrade -y
-
-# Install required packages for kiosk mode
-sudo apt install -y \
-    xserver-xorg-video-fbdev \
-    xserver-xorg \
-    xinit \
-    x11-xserver-utils \
-    matchbox-window-manager \
-    midori \
-    unclutter
-
-# Configure auto-login (optional)
-sudo raspi-config
-# System Options → Boot / Auto Login → Console Autologin
-```
-
-### 3. Configure Kiosk Mode
-
-Replace `DASHBOARD_URL` with your dashboard service URL:
-
-**For local network access:**
-```bash
-DASHBOARD_URL="http://192.168.1.100:8080"  # Replace with your Docker host IP
-```
-
-**For Tailscale access:**
-```bash
-DASHBOARD_URL="https://dashboard.your-tailnet.ts.net"
-```
-
-**Create kiosk startup script:**
-
-```bash
-cat > /home/pi/kiosk.sh << 'EOF'
-#!/bin/bash
-
-# Dashboard URL - Update this with your service URL
-DASHBOARD_URL="http://192.168.1.100:8080"
-
-# Disable screen blanking and power management
-xset -dpms
-xset s off
-xset s noblank
-
-# Hide mouse cursor
-unclutter -idle 0.5 -root &
-
-# Start window manager
-matchbox-window-manager -use_titlebar no &
-
-# Wait a moment for WM to start
-sleep 2
-
-# Start browser in kiosk mode
-midori -e Fullscreen -a "$DASHBOARD_URL"
-EOF
-
-chmod +x /home/pi/kiosk.sh
-```
-
-### 4. Auto-Start Kiosk on Boot
-
-```bash
-# Create .xinitrc to start kiosk
-echo 'exec /home/pi/kiosk.sh' > /home/pi/.xinitrc
-
-# Auto-start X11 on login
-cat >> /home/pi/.bash_profile << 'EOF'
-if [ -z "$DISPLAY" ] && [ "$XDG_VTNR" = 1 ]; then
-    startx
-fi
-EOF
-```
-
-### 5. Display Configuration (Optional)
-
-**For vertical displays, configure rotation:**
-
-```bash
-# Add to /boot/firmware/config.txt
-echo 'display_rotate=1' | sudo tee -a /boot/firmware/config.txt
-echo 'gpu_mem=64' | sudo tee -a /boot/firmware/config.txt
-```
-
-**Alternative browser options:**
-
-```bash
-# For Chromium instead of Midori (more resource intensive, but not available for older Pi models):
-sudo apt install -y chromium-browser
-
-# Update kiosk.sh to use Chromium:
-# chromium-browser --kiosk --noerrdialogs --disable-infobars --incognito "$DASHBOARD_URL"
-```
-
-### 6. System Optimizations
-
-**Resource optimization for older Pi models:**
-
-```bash
-# Disable unnecessary services
-sudo systemctl disable bluetooth
-sudo systemctl disable wifi-powersave@wlan0.service
-
-# Add to /boot/firmware/config.txt for better performance
-echo 'disable_overscan=1' | sudo tee -a /boot/firmware/config.txt
-echo 'dtparam=audio=off' | sudo tee -a /boot/firmware/config.txt
-
-# Set up daily reboot at 4 AM (optional)
-echo '0 4 * * * /sbin/reboot' | crontab -
-```
-
-**Test the setup:**
-
-```bash
-# Reboot to test auto-start
-sudo reboot
-
-# Or start manually for testing
-startx
-```
-
-## Development & Testing
-
-For local development and testing:
-
-```bash
-# Clone repository
-git clone https://github.com/francojc/pi-dashboard-docker.git
-cd pi-dashboard-docker
-
-# Set up Python environment
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-
-# Configure API keys
-cp .env.example .env
-# Edit .env with your OpenWeatherMap API key
-
-# Generate dashboard once
-python src/generate_dashboard.py
-
-# View generated output
-python -m http.server 8000 --directory output
-# Open http://localhost:8000 in browser
-```
-
-## Configuration
-
-### Weather
-
-Edit `src/config/config.json`:
-
-```json
-{
-  "weather": {
-    "api_key": "YOUR_OPENWEATHER_API_KEY",
-    "location": "London,UK",
-    "units": "metric"
-  }
-}
-```
-
-Get your free API key from [OpenWeatherMap](https://openweathermap.org/api).
-
-### RSS Feeds
-
-Add or modify feeds in `src/config/config.json`:
-
-```json
-{
-  "rss_feeds": {
-    "Feed Name": "https://example.com/rss",
-    "Another Feed": "https://another.com/feed.xml",
-    "Reddit ClaudeAI": "https://www.reddit.com/r/ClaudeAI/.rss"
-  }
-}
-```
-
-**Reddit RSS Format:**
-
-- Basic: `https://www.reddit.com/r/SUBREDDIT/.rss`
-- Hot posts: `https://www.reddit.com/r/SUBREDDIT/hot/.rss`
-- New posts: `https://www.reddit.com/r/SUBREDDIT/new/.rss`
-- Top posts: `https://www.reddit.com/r/SUBREDDIT/top/.rss`
-
-### Display Settings
+For older or less powerful devices, adjust display settings:
 
 ```json
 {
   "display": {
-    "refresh_interval": 900,  // seconds
-    "theme": "dark"
+    "refresh_interval": 1800,
+    "theme": "dark",
+    "show_seconds": false
   }
 }
 ```
 
-## Development
+### Screen Size Adaptations
 
-### Project Structure
+The dashboard automatically adapts to screen size, but you can optimize for specific devices:
 
-```
-pi-dashboard/
-├── src/
-│   ├── generate_dashboard.py    # Main generator script
-│   ├── templates/              # Jinja2 templates
-│   │   └── dashboard.html
-│   └── config/                 # Configuration files
-│       └── config.json
-├── deployment/                 # Pi deployment files
-│   ├── dashboard-kiosk.service
-│   ├── dashboard-updater.service
-│   └── install.sh
-├── output/                     # Generated dashboard
-│    └── index.html
-├── logs/                       # Application logs
-└── tests/                      # Test files
-```
+- **Large displays (>1920px)**: All widgets displayed
+- **Medium displays (768-1920px)**: Responsive grid layout
+- **Small displays (<768px)**: Stacked layout optimized for mobile
 
-### Testing Locally
+## Development & Testing
 
-1. Install dependencies:
+### Local Development
 
 ```bash
+# Clone repository
+git clone https://github.com/your-username/universal-dashboard.git
+cd universal-dashboard
+
+# Set up Python environment
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
-```
 
-2. Run tests:
+# Configure API keys
+cp .env.example .env
+# Edit .env with your API keys
 
-```bash
-pytest tests/
-```
-
-3. Generate and serve dashboard:
-
-```bash
+# Generate dashboard
 python src/generate_dashboard.py
+
+# Test locally
 python -m http.server 8000 --directory output
+# Open http://localhost:8000
 ```
 
-### Customization
+### Testing
 
-#### Adding New Widgets
+```bash
+# Run tests
+pytest tests/
 
-1. Create data fetcher in `generate_dashboard.py`
-2. Add widget HTML in `templates/dashboard.html`
-3. Style widget in `static/styles.css`
-
-#### Changing Layout
-
-Edit CSS grid/flexbox in `static/styles.css`. The layout uses flexbox for vertical stacking.
+# Test specific components
+python test_dashboard.py
+python test_oauth.py
+```
 
 ## Troubleshooting
 
-### Docker Service Issues
+### Common Issues
 
+**Dashboard not loading:**
 ```bash
 # Check service status
 docker compose ps
@@ -426,80 +324,40 @@ docker compose ps
 # View logs
 docker compose logs -f
 
-# Restart services
-docker compose restart
-
-# Check dashboard accessibility
+# Test connectivity
 curl -I http://localhost:8080
 ```
 
-### Pi Kiosk Issues
+**API integration issues:**
+1. Verify API keys in `.env` file
+2. Check service logs for authentication errors
+3. Ensure API services are accessible from your network
 
-```bash
-# Check X11 status
-ps aux | grep X
+**Display device problems:**
+1. Verify network connectivity to dashboard service
+2. Try different browsers
+3. Check firewall settings
+4. Ensure dashboard URL is correct
 
-# Restart kiosk manually
-sudo pkill X
-startx
+### Performance Optimization
 
-# View system logs
-journalctl -f
+**For high-traffic or multiple displays:**
+- Increase `refresh_interval` in config
+- Use caching proxy (nginx already included)
+- Monitor resource usage with `docker stats`
 
-# Test browser manually
-DISPLAY=:0 midori -e Fullscreen -a http://your-dashboard-url:8080
-```
-
-### Network Connectivity
-
-```bash
-# Test dashboard access from Pi
-curl -I http://your-docker-host:8080
-
-# For Tailscale issues
-sudo tailscale status
-sudo tailscale ping your-docker-host
-
-# Check DNS resolution
-nslookup dashboard.your-tailnet.ts.net
-```
-
-### Performance Issues
-
-For older Pi models experiencing slow performance:
-
-1. Use Midori instead of Chromium
-2. Increase GPU memory: `gpu_mem=128` in `/boot/firmware/config.txt`
-3. Enable daily reboot: `0 4 * * * /sbin/reboot` in crontab
-4. Disable unnecessary services
-
-## Performance Optimization
-
-### Docker Service
-- **Server-side rendering**: Static HTML generation reduces client load
-- **Efficient caching**: Docker volumes for persistent data
-- **Resource management**: Automatic container restart on failure
-
-### Pi Kiosk Client
-- **Lightweight browser**: Midori recommended for older Pi models
-- **No JavaScript dependencies**: Dashboard uses only HTML/CSS
-- **Minimal cache**: Incognito/private browsing prevents buildup
-- **GPU acceleration**: CSS transforms for smooth animations
-- **Memory management**: Daily reboot clears potential leaks
+**For low-power display devices:**
+- Use dark theme to reduce power consumption
+- Disable unnecessary widgets in config
+- Reduce animation complexity in CSS
 
 ## Security Considerations
 
-### Docker Service
-- API keys stored in environment variables (not in images)
+- API keys stored in environment variables (not in containers)
 - Containers run as non-root users
 - No external JavaScript dependencies
-- OAuth tokens stored as mounted files (not in containers)
-
-### Network Security
-- **Tailscale recommended**: End-to-end encrypted access
-- **TSDProxy**: HTTPS termination and domain routing
-- **Local network**: Standard HTTP for internal access
-- **Pi client**: Read-only access to dashboard service
+- OAuth tokens stored securely outside containers
+- Tailscale provides end-to-end encryption for remote access
 
 ## Contributing
 
@@ -516,7 +374,6 @@ MIT License - see LICENSE file for details
 ## Acknowledgments
 
 - Weather data from [OpenWeatherMap](https://openweathermap.org/)
-- Inspired by MagicMirror² project
 - [Tailscale](https://tailscale.com/) for secure networking
 - [TSDProxy](https://github.com/almeidapaulopt/tsdproxy) for reverse proxy
-- Designed for low-resource Pi devices as display clients
+- Designed for universal device compatibility
