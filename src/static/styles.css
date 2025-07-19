@@ -1314,14 +1314,25 @@ body {
 }
 
 .orientation-horizontal .content-grid {
-  grid-template-columns: repeat(4, 1fr);
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  grid-auto-rows: 1fr;
   height: var(--content-height);
   gap: var(--grid-gap-horizontal);
+  overflow: hidden;
 }
 
+/* Flatten column structure for horizontal layout */
 .orientation-horizontal .left-column,
 .orientation-horizontal .right-column {
   display: contents;
+}
+
+.orientation-horizontal .card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
 }
 
 /* Horizontal Hero Layout */
@@ -1350,6 +1361,20 @@ body {
 .orientation-horizontal .card {
   height: 100%;
   overflow-y: auto;
+  min-height: 0;
+}
+
+.orientation-horizontal .card-content,
+.orientation-horizontal .calendar-content,
+.orientation-horizontal .forecast-container,
+.orientation-horizontal .canvas-assignments,
+.orientation-horizontal .canvas-grading-queue,
+.orientation-horizontal .canvas-student-engagement,
+.orientation-horizontal .canvas-discussion-hotspots,
+.orientation-horizontal .canvas-assignment-performance {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
 }
 
 /* Calendar Horizontal Layout */
