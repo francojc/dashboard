@@ -36,7 +36,7 @@
     "refresh_interval": 900,
     "theme": "dark",
     "show_seconds": false,
-    "orientation": "horizontal"
+    "orientation": "vertical"
   },
   "traffic_map": {
     "center_lat": 36.11070732418548,
@@ -80,7 +80,7 @@
     }
   },
   "canvas": {
-    "use_mock_data": true,
+    "use_mock_data": false,
     "courses": [
       {
         "id": "65908",

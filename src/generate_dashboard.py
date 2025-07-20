@@ -12,7 +12,7 @@ import shutil
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 from pathlib import Path
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 
 import requests
 import feedparser
@@ -95,6 +95,15 @@ class GoogleCalendarService:
                 }
 
                 try:
+                    # Check if we're in a container environment (no display)
+                    in_container = os.getenv('DISPLAY') is None and os.path.exists('/.dockerenv')
+                    
+                    if in_container:
+                        logger.warning("Running in container environment - OAuth flow not available")
+                        logger.warning("Please run the script locally first to generate token.json")
+                        logger.warning("Then copy token.json to the container volume")
+                        return  # Fall back to mock data
+                    
                     flow = InstalledAppFlow.from_client_config(client_config, self.SCOPES)
                     # Use port from environment variable
                     port = int(os.getenv('PORT', '8081'))
@@ -111,7 +120,8 @@ class GoogleCalendarService:
                     port = os.getenv('PORT', '8081')
                     logger.error(f"Make sure http://localhost:{port} is registered as a redirect URI in Google Cloud Console")
                     logger.error(f"OAuth client config: client_id ends with ...{client_id[-10:] if client_id and len(client_id) > 10 else 'N/A'}")
-                    raise
+                    logger.warning("Falling back to mock calendar data")
+                    return  # Don't raise, just fall back to mock data
 
         if self.credentials:
             try:
@@ -861,30 +871,30 @@ class CanvasService:
         """Generate mock grading queue data for testing"""
         mock_items = [
             {
-                'title': 'Essay Assignment 3',
+                'assignment_name': 'Essay Assignment 3',
                 'course_name': 'SPA 111-B',
                 'course_color': '#E53935',
-                'submissions_count': 18,
+                'submission_count': 18,
                 'due_date': '01/15 23:59',
                 'priority': 'high',
                 'speedgrader_url': '#',
                 'assignment_type': 'assignment'
             },
             {
-                'title': 'Quiz: Preterite vs Imperfect',
+                'assignment_name': 'Quiz: Preterite vs Imperfect',
                 'course_name': 'SPA 212-B',
                 'course_color': '#1E88E5',
-                'submissions_count': 12,
+                'submission_count': 12,
                 'due_date': '01/14 11:59',
                 'priority': 'high',
                 'speedgrader_url': '#',
                 'assignment_type': 'quiz'
             },
             {
-                'title': 'Discussion: Cultural Perspectives',
+                'assignment_name': 'Discussion: Cultural Perspectives',
                 'course_name': 'SPA 111-B',
                 'course_color': '#E53935',
-                'submissions_count': 8,
+                'submission_count': 8,
                 'due_date': '01/18 23:59',
                 'priority': 'medium',
                 'speedgrader_url': '#',
@@ -898,30 +908,33 @@ class CanvasService:
         """Generate mock student engagement data for testing"""
         mock_students = [
             {
-                'name': 'Maria Garcia',
+                'student_name': 'Maria Garcia',
                 'course_name': 'SPA 111-B',
                 'course_color': '#E53935',
                 'risk_indicators': ['3 missing assignments', '2 late submissions'],
-                'missing_assignments': 3,
-                'late_assignments': 2,
+                'missing_count': 3,
+                'late_count': 2,
+                'risk_level': 'high',
                 'student_url': '#'
             },
             {
-                'name': 'John Smith',
+                'student_name': 'John Smith',
                 'course_name': 'SPA 212-B',
                 'course_color': '#1E88E5',
                 'risk_indicators': ['2 missing assignments'],
-                'missing_assignments': 2,
-                'late_assignments': 0,
+                'missing_count': 2,
+                'late_count': 0,
+                'risk_level': 'medium',
                 'student_url': '#'
             },
             {
-                'name': 'Ana Rodriguez',
+                'student_name': 'Ana Rodriguez',
                 'course_name': 'SPA 111-B',
                 'course_color': '#E53935',
                 'risk_indicators': ['5 late submissions'],
-                'missing_assignments': 0,
-                'late_assignments': 5,
+                'missing_count': 0,
+                'late_count': 5,
+                'risk_level': 'medium',
                 'student_url': '#'
             }
         ]
@@ -1176,6 +1189,10 @@ class DashboardGenerator:
         self.output_static_dir.mkdir(exist_ok=True)
         self.test_mode = False  # Will be set by command line args
         self.calendar_service = None
+        
+        # Detect container environment for enhanced logging
+        self.in_container = self._detect_container_environment()
+        self._log_environment_info()
         if not self.config.get('calendar', {}).get('use_mock_data', True):
             try:
                 self.calendar_service = GoogleCalendarService()
@@ -1201,6 +1218,41 @@ class DashboardGenerator:
             logger.info("Canvas service initialized successfully")
         except Exception as e:
             logger.warning(f"Failed to initialize Canvas service: {e}")
+
+    def _detect_container_environment(self) -> bool:
+        """Detect if running in a container environment"""
+        # Check for common container indicators
+        container_indicators = [
+            os.path.exists('/.dockerenv'),  # Docker
+            os.path.exists('/run/.containerenv'),  # Podman
+            os.getenv('container') is not None,  # systemd-nspawn
+            os.getenv('KUBERNETES_SERVICE_HOST') is not None,  # Kubernetes
+        ]
+        return any(container_indicators)
+    
+    def _log_environment_info(self):
+        """Log detailed environment information for debugging"""
+        env_type = "container" if self.in_container else "host"
+        logger.info(f"Dashboard generator starting in {env_type} environment")
+        
+        if self.in_container:
+            logger.info(f"Container working directory: {os.getcwd()}")
+            logger.info(f"Output directory: {self.output_dir}")
+            logger.debug("Container environment detected - enhanced error handling enabled")
+        
+        # Log key environment variables (without exposing secrets)
+        env_vars = ['OPENWEATHER_API_KEY', 'MAPBOX_API_KEY', 'CANVAS_API_KEY', 'WEATHER_LOCATION']
+        for var in env_vars:
+            value = os.getenv(var)
+            if value:
+                # Only show first 4 and last 4 characters for API keys
+                if 'KEY' in var:
+                    masked = f"{value[:4]}...{value[-4:]}" if len(value) > 8 else "***"
+                    logger.debug(f"Environment: {var}={masked}")
+                else:
+                    logger.debug(f"Environment: {var}={value}")
+            else:
+                logger.debug(f"Environment: {var}=<not set>")
 
     def _load_config(self, config_path: str) -> dict:
         """Load configuration from JSON file"""
@@ -1479,8 +1531,8 @@ class DashboardGenerator:
 
     def _fetch_hourly_from_forecast(self) -> Optional[List[Dict]]:
         """
-        Fetch pseudo-hourly data from the free 5-day/3-hour forecast API.
-        Returns data every 3 hours, which we'll present as "hourly" data.
+        Fetch 3-hour interval weather data from the free 5-day/3-hour forecast API.
+        Returns 4 data points covering the next 12 hours.
         """
         try:
             config = self.config.get('weather', {})
@@ -1509,7 +1561,7 @@ class DashboardGenerator:
                 dt_object = datetime.fromtimestamp(item['dt'], tz=local_tz)
                 if dt_object > current_time:
                     future_items.append(item)
-                    if len(future_items) >= 8:  # Take 8 future items (24 hours worth)
+                    if len(future_items) >= 4:  # Take 4 future items (12 hours worth in 3-hour increments)
                         break
             
             # Process the future forecast items
@@ -1557,14 +1609,10 @@ class DashboardGenerator:
             'uv_index': 7,
             'alerts': [],
             'hourly_forecast': [
-                {'time': '9 AM', 'temp': 81, 'humidity': 65, 'wind_speed': 8, 'pop': 0, 'description': 'Clear Sky', 'icon': '01d'},
-                {'time': '12 PM', 'temp': 85, 'humidity': 60, 'wind_speed': 10, 'pop': 5, 'description': 'Sunny', 'icon': '01d'},
                 {'time': '3 PM', 'temp': 88, 'humidity': 55, 'wind_speed': 12, 'pop': 10, 'description': 'Partly Cloudy', 'icon': '02d'},
                 {'time': '6 PM', 'temp': 85, 'humidity': 60, 'wind_speed': 8, 'pop': 15, 'description': 'Partly Cloudy', 'icon': '02d'},
                 {'time': '9 PM', 'temp': 79, 'humidity': 70, 'wind_speed': 6, 'pop': 20, 'description': 'Clear', 'icon': '01n'},
-                {'time': '12 AM', 'temp': 75, 'humidity': 75, 'wind_speed': 4, 'pop': 0, 'description': 'Clear', 'icon': '01n'},
-                {'time': '3 AM', 'temp': 72, 'humidity': 80, 'wind_speed': 3, 'pop': 0, 'description': 'Clear', 'icon': '01n'},
-                {'time': '6 AM', 'temp': 74, 'humidity': 78, 'wind_speed': 5, 'pop': 5, 'description': 'Sunny', 'icon': '01d'}
+                {'time': '12 AM', 'temp': 75, 'humidity': 75, 'wind_speed': 4, 'pop': 0, 'description': 'Clear', 'icon': '01n'}
             ]
         }
 
@@ -2451,12 +2499,72 @@ class DashboardGenerator:
             logger.error(f"Failed to fetch Canvas assignment performance: {e}")
             return []
 
+    def generate_three_month_calendar(self) -> Dict[str, Any]:
+        """Generate data for a 3-month calendar view (previous, current, next month)"""
+        import calendar
+        
+        local_tz = self._get_configured_timezone()
+        now = datetime.now(local_tz)
+        
+        # Calculate previous, current, and next month
+        prev_month = now.month - 1 if now.month > 1 else 12
+        prev_year = now.year if now.month > 1 else now.year - 1
+        
+        next_month = now.month + 1 if now.month < 12 else 1
+        next_year = now.year if now.month < 12 else now.year + 1
+        
+        months_data = []
+        
+        # Generate data for each month
+        for month_offset in [-1, 0, 1]:
+            if month_offset == -1:
+                month = prev_month
+                year = prev_year
+                is_current = False
+            elif month_offset == 0:
+                month = now.month
+                year = now.year
+                is_current = True
+            else:
+                month = next_month
+                year = next_year
+                is_current = False
+            
+            # Get calendar data for the month
+            cal = calendar.monthcalendar(year, month)
+            month_name = calendar.month_name[month]
+            
+            # Build weeks data
+            weeks = []
+            for week in cal:
+                week_days = []
+                for day in week:
+                    if day == 0:
+                        week_days.append({'day': '', 'is_today': False, 'is_other_month': True})
+                    else:
+                        is_today = (is_current and day == now.day)
+                        week_days.append({
+                            'day': day,
+                            'is_today': is_today,
+                            'is_other_month': False
+                        })
+                weeks.append(week_days)
+            
+            months_data.append({
+                'name': month_name,
+                'year': year,
+                'is_current': is_current,
+                'weeks': weeks
+            })
+        
+        return {
+            'months': months_data,
+            'weekdays': ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+        }
+
     def generate_dashboard(self):
         """Generate the dashboard HTML"""
         try:
-            # Copy static files first
-            self.copy_static_files()
-
             # Fetch all data
             logger.info("Fetching dashboard data...")
             weather = self.fetch_weather()
@@ -2471,6 +2579,9 @@ class DashboardGenerator:
             canvas_student_engagement = self.fetch_canvas_student_engagement()
             canvas_discussion_hotspots = self.fetch_canvas_discussion_hotspots()
             canvas_assignment_performance = self.fetch_canvas_assignment_performance()
+
+            # Generate 3-month calendar
+            three_month_calendar = self.generate_three_month_calendar()
 
             # Get current date/time info
             now = datetime.now()
@@ -2616,7 +2727,8 @@ class DashboardGenerator:
                 'canvas_grading_queue': canvas_grading_queue,
                 'canvas_student_engagement': canvas_student_engagement,
                 'canvas_discussion_hotspots': canvas_discussion_hotspots,
-                'canvas_assignment_performance': canvas_assignment_performance
+                'canvas_assignment_performance': canvas_assignment_performance,
+                'three_month_calendar': three_month_calendar
             }
 
             # Render template
@@ -2629,9 +2741,29 @@ class DashboardGenerator:
             output_path = self.output_dir / 'index.html'
             with open(output_path, 'w', encoding='utf-8') as f:
                 f.write(html_content)
+                f.flush()  # Ensure data is written to disk
+                os.fsync(f.fileno())  # Force file system sync
 
-            logger.info(f"Dashboard generated successfully: {output_path}")
-            return True
+            # Validate file was written correctly
+            if output_path.exists() and output_path.stat().st_size > 0:
+                logger.info(f"Dashboard generated successfully: {output_path} ({output_path.stat().st_size} bytes)")
+                
+                # Additional validation: check if file is readable
+                try:
+                    with open(output_path, 'r', encoding='utf-8') as f:
+                        content_check = f.read(100)  # Read first 100 chars
+                        if content_check.startswith('<!DOCTYPE html>'):
+                            logger.debug("Generated HTML file validation passed")
+                        else:
+                            logger.warning("Generated file may not be valid HTML")
+                except Exception as e:
+                    logger.error(f"Failed to validate generated file: {e}")
+                    return False
+                    
+                return True
+            else:
+                logger.error(f"Generated file not found or empty: {output_path}")
+                return False
 
         except Exception as e:
             logger.error(f"Dashboard generation failed: {e}")
@@ -2660,6 +2792,9 @@ def main():
 
     if args.loop:
         logger.info(f"Starting dashboard generator in loop mode (interval: {args.interval}s)")
+        
+        # Copy static files once at the beginning
+        generator.copy_static_files()
 
         # Set up signal handling for graceful shutdown
         def signal_handler(signum, frame):
@@ -2699,6 +2834,7 @@ def main():
         sys.exit(0)
     else:
         # Single run mode
+        generator.copy_static_files()
         success = generator.generate_dashboard()
         sys.exit(0 if success else 1)
 

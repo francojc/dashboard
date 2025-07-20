@@ -27,48 +27,246 @@
     {% endif %}
 
     <div class="dashboard-container">
-        <!-- Hero Section -->
-        <section class="hero-section">
-            <div class="time-display">
+        <!-- Left Column -->
+        <div class="left-column">
+            <!-- Time/Date Card -->
+            <div class="card time-date-card">
                 <div class="current-time">{{ current_time | default('14:32') }}</div>
                 <div class="current-date">{{ day_name | default('Friday') }}, {{ date_info | default('July 4th, 2025') }}</div>
             </div>
-            <div class="weather-hero">
-                <div class="weather-main">
-                    <div class="main-temp">{{ weather.temp | default('72') }}°</div>
-                    <div class="weather-desc">{{ weather.description | default('Partly Cloudy') }}</div>
-                    <div class="weather-meta">
-                        Feels like {{ weather.feels_like | default('75') }}°
-                    </div>
-                </div>
-                {% if weather and weather.icon %}
-                <img src="https://openweathermap.org/img/wn/{{ weather.icon }}@4x.png"
-                     alt="{{ weather.description }}" class="weather-icon-large">
-                {% else %}
-                <div class="weather-icon-large">⛅</div>
-                {% endif %}
-            </div>
-        </section>
 
-        <!-- Full-width Weather Trends Card -->
-        <div class="card hourly-chart-card full-width-weather">
-            {% if weather and weather.hourly_forecast %}
-            <div class="hourly-chart-container">
-                <!-- Chart Area -->
-                <div class="chart-area">
-                    <!-- Rain Probability Bars (Background) -->
-                    <div class="rain-bars">
-                        {% for hour in weather.hourly_forecast %}
-                        <div class="rain-bar" style="height: {{ hour['pop'] }}%" title="Rain: {{ hour['pop'] }}%"></div>
+            <!-- 3-Month Calendar Card -->
+            <div class="card three-month-calendar-card">
+                <div class="calendar-grid">
+                    {% if three_month_calendar %}
+                        {% for month in three_month_calendar.months %}
+                        <div class="month-container">
+                            <div class="month-header">{{ month.name }} {{ month.year }}</div>
+                            <div class="mini-calendar">
+                                <!-- Day headers -->
+                                {% for day in three_month_calendar.weekdays %}
+                                <div class="mini-day header">{{ day }}</div>
+                                {% endfor %}
+                                
+                                <!-- Calendar days -->
+                                {% for week in month.weeks %}
+                                    {% for day in week %}
+                                        {% if day.is_other_month %}
+                                            <div class="mini-day other-month"></div>
+                                        {% elif day.is_today %}
+                                            <div class="mini-day today">{{ day.day }}</div>
+                                        {% else %}
+                                            <div class="mini-day">{{ day.day }}</div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <!-- Fallback calendar if data not available -->
+                        <div class="month-container">
+                            <div class="month-header">{{ current_month | default('July') }} {{ current_year | default('2025') }}</div>
+                            <div class="mini-calendar">
+                                <!-- Placeholder calendar -->
+                                {% for day in ['S', 'M', 'T', 'W', 'T', 'F', 'S'] %}
+                                <div class="mini-day header">{{ day }}</div>
+                                {% endfor %}
+                                <!-- Sample days -->
+                                {% for i in range(35) %}
+                                <div class="mini-day{% if i == 19 %} today{% endif %}">{{ (i % 31) + 1 if i < 31 else '' }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Canvas Cards Container -->
+            <div class="canvas-cards-container">
+                <!-- Canvas Assignments Card -->
+                {% if canvas_assignments and canvas_assignments|length > 0 %}
+                <div class="card canvas-card assignments-card">
+                    <div class="card-header">
+                        <h3>Upcoming Assignments</h3>
+                    </div>
+                    <div class="canvas-assignments">
+                        {% for assignment in canvas_assignments %}
+                        <div class="assignment-item">
+                            <div class="assignment-info">
+                                <div class="assignment-title">{{ assignment.title }}</div>
+                                <div class="assignment-course" style="color: {{ assignment.course_color }};">
+                                    {{ assignment.course_name }}
+                                </div>
+                            </div>
+                            <div class="assignment-meta">
+                                <div class="assignment-due">Due: {{ assignment.due_date }}</div>
+                                {% if assignment.points_possible %}
+                                <div class="assignment-points">{{ assignment.points_possible }} pts</div>
+                                {% endif %}
+                            </div>
+                        </div>
                         {% endfor %}
                     </div>
+                </div>
+                {% endif %}
 
-                    <!-- Temperature Line Chart (SVG Overlay) -->
-                    <svg class="temp-line-chart" viewBox="0 0 800 200" preserveAspectRatio="none">
-                        {% set temp_values = weather.hourly_forecast | map(attribute='temp') | list %}
-                        {% set min_temp = temp_values | min %}
-                        {% set max_temp = temp_values | max %}
-                        {% set temp_range = max_temp - min_temp if max_temp != min_temp else 10 %}
+                <!-- Canvas Grading Queue Card -->
+                {% if canvas_grading_queue and canvas_grading_queue|length > 0 %}
+                <div class="card canvas-card grading-queue-card">
+                    <div class="card-header">
+                        <h3>Priority Grading Queue</h3>
+                    </div>
+                    <div class="canvas-grading-queue">
+                        {% for item in canvas_grading_queue %}
+                        <div class="grading-item priority-{{ item.priority }}">
+                            <div class="grading-info">
+                                <div class="grading-title">{{ item.assignment_name }}</div>
+                                <div class="grading-course" style="color: {{ item.course_color }};">
+                                    {{ item.course_name }}
+                                </div>
+                            </div>
+                            <div class="grading-meta">
+                                <div class="grading-stats">
+                                    <span class="submission-count">{{ item.submission_count }} submissions</span>
+                                    <span class="grading-priority">{{ item.priority|title }} Priority</span>
+                                </div>
+                                <div class="grading-due">Due: {{ item.due_date }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Canvas Student Engagement Card -->
+                {% if canvas_student_engagement and canvas_student_engagement|length > 0 %}
+                <div class="card canvas-card student-engagement-card">
+                    <div class="card-header">
+                        <h3>Student Engagement Alert</h3>
+                    </div>
+                    <div class="canvas-student-engagement">
+                        {% for student in canvas_student_engagement %}
+                        <div class="engagement-item risk-{{ student.risk_level }}">
+                            <div class="engagement-info">
+                                <div class="student-name">{{ student.student_name }}</div>
+                                <div class="engagement-course" style="color: {{ student.course_color }};">
+                                    {{ student.course_name }}
+                                </div>
+                            </div>
+                            <div class="engagement-meta">
+                                <div class="engagement-stats">
+                                    <span class="missing-count">{{ student.missing_count }} missing</span>
+                                    <span class="late-count">{{ student.late_count }} late</span>
+                                </div>
+                                <div class="engagement-risk">{{ student.risk_level|title }} Risk</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Canvas Discussion Hotspots Card -->
+                {% if canvas_discussion_hotspots and canvas_discussion_hotspots|length > 0 %}
+                <div class="card canvas-card discussion-hotspots-card">
+                    <div class="card-header">
+                        <h3>Discussion Hotspots</h3>
+                    </div>
+                    <div class="canvas-discussion-hotspots">
+                        {% for discussion in canvas_discussion_hotspots %}
+                        <div class="discussion-item">
+                            <div class="discussion-info">
+                                <div class="discussion-title">{{ discussion.title }}</div>
+                                <div class="discussion-course" style="color: {{ discussion.course_color }};">
+                                    {{ discussion.course_name }}
+                                </div>
+                            </div>
+                            <div class="discussion-meta">
+                                <div class="discussion-stats">
+                                    <span class="reply-count">{{ discussion.reply_count }} replies</span>
+                                    <span class="unread-count">{{ discussion.unread_count }} unread</span>
+                                </div>
+                                <div class="discussion-activity">Last: {{ discussion.last_activity }}</div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Google Calendar Events Ticker -->
+            <div class="events-ticker">
+                <div class="ticker-label calendar-ticker-label">Upcoming Events</div>
+                <div class="ticker-scroll calendar-ticker-scroll">
+                    {% if upcoming_events and upcoming_events|length > 0 %}
+                        {% for event in upcoming_events %}
+                        <span class="ticker-item">
+                            <span class="calendar-event">{{ event.date }}:</span>
+                            <span class="event-date">{{ event.summary }}</span>
+                        </span>
+                        {% endfor %}
+                    {% else %}
+                        <!-- Fallback upcoming events -->
+                        <span class="ticker-item">
+                            <span class="calendar-event">Jul 4:</span>
+                            <span class="event-date">Independence Day</span>
+                        </span>
+                        <span class="ticker-item">
+                            <span class="calendar-event">Jul 15:</span>
+                            <span class="event-date">Company All-Hands Meeting</span>
+                        </span>
+                        <span class="ticker-item">
+                            <span class="calendar-event">Jul 20:</span>
+                            <span class="event-date">Team Building Retreat</span>
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <!-- End Left Column -->
+
+        <!-- Right Column -->
+        <div class="right-column">
+            <!-- Weather Summary Card -->
+            <div class="card weather-summary-card">
+                <div class="weather-content">
+                    <div class="weather-main">
+                        <div class="main-temp">{{ weather.temp | default('72') }}°</div>
+                        <div class="weather-desc">{{ weather.description | default('Partly Cloudy') }}</div>
+                        <div class="weather-meta">
+                            Feels like {{ weather.feels_like | default('75') }}°
+                        </div>
+                    </div>
+                    {% if weather and weather.icon %}
+                    <img src="https://openweathermap.org/img/wn/{{ weather.icon }}@4x.png"
+                         alt="{{ weather.description }}" class="weather-icon-large">
+                    {% else %}
+                    <div class="weather-icon-large">⛅</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Hourly Weather Card (3-hour increments) -->
+            <div class="card hourly-weather-card">
+                {% if weather and weather.hourly_forecast %}
+                <div class="hourly-chart-container">
+                    <!-- Chart Area -->
+                    <div class="chart-area">
+                        <!-- Rain Probability Bars (Background) -->
+                        <div class="rain-bars">
+                            {% for hour in weather.hourly_forecast %}
+                            <div class="rain-bar" style="height: {{ hour['pop'] }}%%" title="Rain: {{ hour['pop'] }}%%"></div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Temperature Line Chart (SVG Overlay) -->
+                        <svg class="temp-line-chart" viewBox="0 0 800 200" preserveAspectRatio="none">
+                            {% set temp_values = weather.hourly_forecast | map(attribute='temp') | list %}
+                            {% set min_temp = temp_values | min %}
+                            {% set max_temp = temp_values | max %}
+                            {% set temp_range = max_temp - min_temp if max_temp != min_temp else 10 %}
 
                         <!-- Generate SVG polyline points -->
                         {% set ns = namespace(points=[]) %}
@@ -107,7 +305,7 @@
                             <img src="https://openweathermap.org/img/wn/{{ hour.icon }}.png"
                                  alt="{{ hour.description }}"
                                  class="weather-icon-chart"
-                                 style="left: {{ x_percent }}%; top: {{ y_percent }}%;">
+                                 style="left: {{ x_percent }}%%; top: {{ y_percent }}%%;">
                             {% endif %}
                         {% endfor %}
                     </div>
@@ -121,7 +319,7 @@
                         <div class="axis-temp">{{ hour.temp }}°</div>
                         <div class="axis-details">
                             <span class="wind">{{ hour.wind_speed }}mph</span>
-                            <span class="humidity">{{ hour.humidity }}%</span>
+                            <span class="humidity">{{ hour.humidity }}%%</span>
                         </div>
                     </div>
                     {% endfor %}
@@ -132,296 +330,10 @@
                 <p class="no-data">Hourly forecast not available</p>
             </div>
             {% endif %}
-        </div>
-
-        <!-- Main Content Grid -->
-        <div class="content-grid">
-            <!-- Left Column - Calendar Card -->
-            <div class="left-column">
-                <div class="card calendar-card">
-
-                    <div class="calendar-header-info">
-                        <div class="week-info">Week {{ week_number | default('27') }}</div>
-                    </div>
-
-                    <!-- Two-Month Calendar Grid -->
-                    <div class="calendar-grid">
-                        <!-- July 2025 -->
-                        <div class="month-container">
-                            <div class="month-header">July 2025</div>
-                            <div class="mini-calendar">
-                                <!-- Day headers -->
-                                {% for day in ['M', 'T', 'W', 'T', 'F', 'S', 'S'] %}
-                                <div class="mini-day header">{{ day }}</div>
-                                {% endfor %}
-                                <!-- July days -->
-                                <div class="mini-day other-month">30</div>
-                                <div class="mini-day">1</div>
-                                <div class="mini-day">2</div>
-                                <div class="mini-day">3</div>
-                                <div class="mini-day">4</div>
-                                <div class="mini-day">5</div>
-                                <div class="mini-day">6</div>
-                                <div class="mini-day">7</div>
-                                <div class="mini-day today">8</div>
-                                <div class="mini-day">9</div>
-                                <div class="mini-day">10</div>
-                                <div class="mini-day">11</div>
-                                <div class="mini-day">12</div>
-                                <div class="mini-day">13</div>
-                                <div class="mini-day">14</div>
-                                <div class="mini-day">15</div>
-                                <div class="mini-day">16</div>
-                                <div class="mini-day">17</div>
-                                <div class="mini-day">18</div>
-                                <div class="mini-day">19</div>
-                                <div class="mini-day">20</div>
-                                <div class="mini-day">21</div>
-                                <div class="mini-day">22</div>
-                                <div class="mini-day">23</div>
-                                <div class="mini-day">24</div>
-                                <div class="mini-day">25</div>
-                                <div class="mini-day">26</div>
-                                <div class="mini-day">27</div>
-                                <div class="mini-day">28</div>
-                                <div class="mini-day">29</div>
-                                <div class="mini-day">30</div>
-                                <div class="mini-day">31</div>
-                                <div class="mini-day other-month">1</div>
-                                <div class="mini-day other-month">2</div>
-                                <div class="mini-day other-month">3</div>
-                            </div>
-                        </div>
-
-                        <!-- August 2025 -->
-                        <div class="month-container">
-                            <div class="month-header">August 2025</div>
-                            <div class="mini-calendar">
-                                <!-- Day headers -->
-                                {% for day in ['M', 'T', 'W', 'T', 'F', 'S', 'S'] %}
-                                <div class="mini-day header">{{ day }}</div>
-                                {% endfor %}
-                                <!-- August days -->
-                                <div class="mini-day other-month">28</div>
-                                <div class="mini-day other-month">29</div>
-                                <div class="mini-day other-month">30</div>
-                                <div class="mini-day other-month">31</div>
-                                <div class="mini-day">1</div>
-                                <div class="mini-day">2</div>
-                                <div class="mini-day">3</div>
-                                <div class="mini-day">4</div>
-                                <div class="mini-day">5</div>
-                                <div class="mini-day">6</div>
-                                <div class="mini-day">7</div>
-                                <div class="mini-day">8</div>
-                                <div class="mini-day">9</div>
-                                <div class="mini-day">10</div>
-                                <div class="mini-day">11</div>
-                                <div class="mini-day">12</div>
-                                <div class="mini-day">13</div>
-                                <div class="mini-day">14</div>
-                                <div class="mini-day">15</div>
-                                <div class="mini-day">16</div>
-                                <div class="mini-day">17</div>
-                                <div class="mini-day">18</div>
-                                <div class="mini-day">19</div>
-                                <div class="mini-day">20</div>
-                                <div class="mini-day">21</div>
-                                <div class="mini-day">22</div>
-                                <div class="mini-day">23</div>
-                                <div class="mini-day">24</div>
-                                <div class="mini-day">25</div>
-                                <div class="mini-day">26</div>
-                                <div class="mini-day">27</div>
-                                <div class="mini-day">28</div>
-                                <div class="mini-day">29</div>
-                                <div class="mini-day">30</div>
-                                <div class="mini-day">31</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 5-Day Agenda -->
-                    <div class="agenda-view">
-                        {% if agenda_events and agenda_events|length > 0 %}
-                            {% for day in agenda_events %}
-                            <div class="agenda-day {% if day.is_today %}agenda-today{% endif %}">
-                                <div class="agenda-date">
-                                    <div class="agenda-date-text">{{ day.day_name }}</div>
-                                    <div class="agenda-day-name">{{ day.date }}</div>
-                                </div>
-                                <div class="agenda-events">
-                                    {% if day.events and day.events|length > 0 %}
-                                        {% for event in day.events %}
-                                        <div class="agenda-event {% if event.type == 'all_day' %}agenda-all-day{% endif %}"
-                                             style="border-left-color: {{ event.calendar_color | default('#4285F4') }};">
-                                            <div class="agenda-event-indicator" style="background-color: {{ event.calendar_color | default('#4285F4') }};"></div>
-                                            <div class="agenda-event-content">
-                                                <div class="agenda-event-time">
-                                                    {% if event.start == 'All Day' or event.type == 'all_day' %}
-                                                        All Day
-                                                    {% else %}
-                                                        {% if event.end and event.end != event.start %}
-                                                            {{ event.start }}-{{ event.end }}
-                                                        {% else %}
-                                                            {{ event.start }}
-                                                        {% endif %}
-                                                    {% endif %}
-                                                </div>
-                                                <div class="agenda-event-title">{{ event.summary }}</div>
-                                                <div class="agenda-event-calendar">{{ event.calendar_name | default('Calendar') }}</div>
-                                            </div>
-                                        </div>
-                                        {% endfor %}
-                                    {% else %}
-                                        <div class="agenda-no-events">No events</div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            {% endfor %}
-                        {% else %}
-                            <!-- Fallback agenda -->
-                            <div class="agenda-day agenda-today">
-                                <div class="agenda-date">
-                                    <div class="agenda-date-text">Today</div>
-                                    <div class="agenda-day-name">7/8</div>
-                                </div>
-                                <div class="agenda-events">
-                                    <div class="agenda-event agenda-all-day">
-                                        <div class="agenda-event-time">All Day</div>
-                                        <div class="agenda-event-title">Monthly review</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="agenda-day">
-                                <div class="agenda-date">
-                                    <div class="agenda-date-text">Tomorrow</div>
-                                    <div class="agenda-day-name">7/9</div>
-                                </div>
-                                <div class="agenda-events">
-                                    <div class="agenda-event">
-                                        <div class="agenda-event-time">08:30-09:00</div>
-                                        <div class="agenda-event-title">NCSU orientation</div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="agenda-day">
-                                <div class="agenda-date">
-                                    <div class="agenda-date-text">Tuesday</div>
-                                    <div class="agenda-day-name">7/10</div>
-                                </div>
-                                <div class="agenda-events">
-                                    <div class="agenda-no-events">No events</div>
-                                </div>
-                            </div>
-                            <div class="agenda-day">
-                                <div class="agenda-date">
-                                    <div class="agenda-date-text">Wednesday</div>
-                                    <div class="agenda-day-name">7/11</div>
-                                </div>
-                                <div class="agenda-events">
-                                    <div class="agenda-no-events">No events</div>
-                                </div>
-                            </div>
-                            <div class="agenda-day">
-                                <div class="agenda-date">
-                                    <div class="agenda-date-text">Thursday</div>
-                                    <div class="agenda-day-name">7/12</div>
-                                </div>
-                                <div class="agenda-events">
-                                    <div class="agenda-no-events">No events</div>
-                                </div>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Canvas Assignments Card -->
-                {% if canvas_assignments and canvas_assignments|length > 0 %}
-                <div class="card canvas-card">
-                    <div class="card-header">
-                        <h3>Upcoming Assignments</h3>
-                    </div>
-                    <div class="canvas-assignments">
-                        {% for assignment in canvas_assignments %}
-                        <div class="assignment-item">
-                            <div class="assignment-info">
-                                <div class="assignment-title">{{ assignment.title }}</div>
-                                <div class="assignment-course" style="color: {{ assignment.course_color }};">
-                                    {{ assignment.course_name }}
-                                </div>
-                            </div>
-                            <div class="assignment-meta">
-                                <div class="assignment-due">Due: {{ assignment.due_date }}</div>
-                                {% if assignment.points_possible %}
-                                <div class="assignment-points">{{ assignment.points_possible }} pts</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- Canvas Grading Queue Card -->
-                {% if canvas_grading_queue and canvas_grading_queue|length > 0 %}
-                <div class="card canvas-card">
-                    <div class="card-header">
-                        <h3>Priority Grading Queue</h3>
-                    </div>
-                    <div class="canvas-grading-queue">
-                        {% for item in canvas_grading_queue %}
-                        <div class="grading-item priority-{{ item.priority }}">
-                            <div class="grading-info">
-                                <div class="grading-title">{{ item.assignment_name }}</div>
-                                <div class="grading-course" style="color: {{ item.course_color }};">
-                                    {{ item.course_name }}
-                                </div>
-                            </div>
-                            <div class="grading-meta">
-                                <div class="grading-stats">
-                                    <span class="submission-count">{{ item.submission_count }} submissions</span>
-                                    <span class="grading-priority">{{ item.priority|title }} Priority</span>
-                                </div>
-                                <div class="grading-due">Due: {{ item.due_date }}</div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- Canvas Student Engagement Card -->
-                {% if canvas_student_engagement and canvas_student_engagement|length > 0 %}
-                <div class="card canvas-card">
-                    <div class="card-header">
-                        <h3>Student Engagement Alert</h3>
-                    </div>
-                    <div class="canvas-student-engagement">
-                        {% for student in canvas_student_engagement %}
-                        <div class="engagement-item risk-{{ student.risk_level }}">
-                            <div class="engagement-info">
-                                <div class="student-name">{{ student.student_name }}</div>
-                                <div class="engagement-course" style="color: {{ student.course_color }};">
-                                    {{ student.course_name }}
-                                </div>
-                            </div>
-                            <div class="engagement-meta">
-                                <div class="engagement-stats">
-                                    <span class="missing-count">{{ student.missing_count }} missing</span>
-                                    <span class="late-count">{{ student.late_count }} late</span>
-                                </div>
-                                <div class="engagement-risk">{{ student.risk_level|title }} Risk</div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
             </div>
 
-            <!-- Right Column - Weather Related Cards -->
-            <div class="right-column">
+            <!-- Bottom Right Sub-Grid -->
+            <div class="bottom-right-grid">
                 <!-- 5-Day Forecast Card -->
                 <div class="card forecast-card">
                     <div class="forecast-container">
@@ -473,246 +385,95 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="forecast-item">
-                                <div class="forecast-day-name">Tomorrow</div>
-                                <div class="forecast-icon-small">🌧️</div>
-                                <div class="forecast-desc">Light showers</div>
-                                <div class="forecast-temp-container">
-                                    <div class="temp-bar-container">
-                                        <div class="temp-bar"
-                                             style="--low: 62; --high: 70; --week-min: 62; --week-range: 18;"
-                                             aria-label="Low 62 degrees, High 70 degrees">
-                                            <span class="visually-hidden">62°</span>
-                                            <span class="visually-hidden">70°</span>
-                                        </div>
-                                    </div>
-                                    <div class="forecast-temp-range">
-                                        <span class="forecast-low">62°</span>
-                                        <span class="forecast-high">70°</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="forecast-item">
-                                <div class="forecast-day-name">Monday</div>
-                                <div class="forecast-icon-small">⛅</div>
-                                <div class="forecast-desc">Partly cloudy</div>
-                                <div class="forecast-temp-container">
-                                    <div class="temp-bar-container">
-                                        <div class="temp-bar"
-                                             style="--low: 64; --high: 75; --week-min: 62; --week-range: 18;"
-                                             aria-label="Low 64 degrees, High 75 degrees">
-                                            <span class="visually-hidden">64°</span>
-                                            <span class="visually-hidden">75°</span>
-                                        </div>
-                                    </div>
-                                    <div class="forecast-temp-range">
-                                        <span class="forecast-low">64°</span>
-                                        <span class="forecast-high">75°</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="forecast-item">
-                                <div class="forecast-day-name">Tuesday</div>
-                                <div class="forecast-icon-small">☀️</div>
-                                <div class="forecast-desc">Bright and sunny</div>
-                                <div class="forecast-temp-container">
-                                    <div class="temp-bar-container">
-                                        <div class="temp-bar"
-                                             style="--low: 68; --high: 80; --week-min: 62; --week-range: 18;"
-                                             aria-label="Low 68 degrees, High 80 degrees">
-                                            <span class="visually-hidden">68°</span>
-                                            <span class="visually-hidden">80°</span>
-                                        </div>
-                                    </div>
-                                    <div class="forecast-temp-range">
-                                        <span class="forecast-low">68°</span>
-                                        <span class="forecast-high">80°</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="forecast-item">
-                                <div class="forecast-day-name">Wednesday</div>
-                                <div class="forecast-icon-small">⛅</div>
-                                <div class="forecast-desc">Mixed clouds</div>
-                                <div class="forecast-temp-container">
-                                    <div class="temp-bar-container">
-                                        <div class="temp-bar"
-                                             style="--low: 66; --high: 77; --week-min: 62; --week-range: 18;"
-                                             aria-label="Low 66 degrees, High 77 degrees">
-                                            <span class="visually-hidden">66°</span>
-                                            <span class="visually-hidden">77°</span>
-                                        </div>
-                                    </div>
-                                    <div class="forecast-temp-range">
-                                        <span class="forecast-low">66°</span>
-                                        <span class="forecast-high">77°</span>
-                                    </div>
-                                </div>
-                            </div>
                         {% endif %}
                     </div>
                 </div>
 
-                <!-- Travel Card -->
-                <div class="card local-info-card">
-                    <div class="traffic-section">
-                        <div class="traffic-label">Traffic Conditions</div>
-                        <div class="traffic-horizontal-layout">
-                            <!-- Traffic Map (Vertical Rectangle) -->
-                            <div class="traffic-map-container">
-                                {% if mapbox_map_config and mapbox_map_config.access_token %}
-                                <!-- Mapbox GL JS interactive map with traffic -->
-                                <div id="traffic-map" class="traffic-map"></div>
-                                {% else %}
-                                <!-- Fallback when Mapbox not available -->
-                                <div class="traffic-map-fallback">
-                                    <p>Traffic map temporarily unavailable</p>
-                                </div>
-                                {% endif %}
-                            </div>
-
-                            <!-- Travel Times Section (Side Panel) -->
-                            {% if travel_times and travel_times|length > 0 %}
-                            <div class="travel-times">
-                                {% for travel_time in travel_times %}
-                                <div class="travel-time-item">
-                                    <div class="destination-info">
-                                        <span class="destination-name">{{ travel_time.destination }}</span>
-                                        <span class="traffic-status">{{ travel_time.traffic_status }}</span>
-                                    </div>
-                                    <div class="travel-duration">{{ travel_time.duration_text }}</div>
-                                </div>
-                                {% endfor %}
+                <!-- Traffic Map Card -->
+                <div class="card traffic-card">
+                    <div class="traffic-content">
+                        <!-- Map Container -->
+                        <div class="traffic-map-container">
+                            {% if mapbox_map_config and mapbox_map_config.access_token %}
+                            <div id="traffic-map" class="traffic-map"></div>
+                            {% else %}
+                            <div class="traffic-placeholder">
+                                <div class="placeholder-icon">🗺️</div>
+                                <p>Traffic map temporarily unavailable</p>
                             </div>
                             {% endif %}
                         </div>
-                    </div>
-                </div>
 
-                <!-- Canvas Discussion Hotspots Card -->
-                {% if canvas_discussion_hotspots and canvas_discussion_hotspots|length > 0 %}
-                <div class="card canvas-card">
-                    <div class="card-header">
-                        <h3>Discussion Hotspots</h3>
-                    </div>
-                    <div class="canvas-discussion-hotspots">
-                        {% for discussion in canvas_discussion_hotspots %}
-                        <div class="discussion-item">
-                            <div class="discussion-info">
-                                <div class="discussion-title">{{ discussion.title }}</div>
-                                <div class="discussion-course" style="color: {{ discussion.course_color }};">
-                                    {{ discussion.course_name }}
+                        <!-- Travel Times Side Panel -->
+                        {% if travel_times and travel_times|length > 0 %}
+                        <div class="travel-times-panel">
+                            {% for travel_time in travel_times %}
+                            <div class="travel-time-entry">
+                                <div class="destination-name">{{ travel_time.destination }}</div>
+                                <div class="travel-info">
+                                    <span class="travel-duration">{{ travel_time.duration_text }}</span>
+                                    <span class="traffic-indicator {{ travel_time.traffic_status | lower }}"></span>
                                 </div>
                             </div>
-                            <div class="discussion-meta">
-                                <div class="discussion-stats">
-                                    <span class="reply-count">{{ discussion.reply_count }} replies</span>
-                                    <span class="unread-count">{{ discussion.unread_count }} unread</span>
-                                </div>
-                                <div class="discussion-activity">Last: {{ discussion.last_activity }}</div>
-                            </div>
+                            {% endfor %}
                         </div>
-                        {% endfor %}
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- Canvas Assignment Performance Card -->
-                {% if canvas_assignment_performance and canvas_assignment_performance|length > 0 %}
-                <div class="card canvas-card">
-                    <div class="card-header">
-                        <h3>Assignment Performance</h3>
-                    </div>
-                    <div class="canvas-assignment-performance">
-                        {% for assignment in canvas_assignment_performance %}
-                        <div class="performance-item">
-                            <div class="performance-info">
-                                <div class="performance-title">{{ assignment.assignment_name }}</div>
-                                <div class="performance-course" style="color: {{ assignment.course_color }};">
-                                    {{ assignment.course_name }}
+                        {% else %}
+                        <div class="travel-times-panel">
+                            <!-- Fallback travel times -->
+                            {% for dest in [
+                                {'name': 'Home', 'duration': '12 min', 'status': 'green'},
+                                {'name': 'RJR High', 'duration': '8 min', 'status': 'yellow'},
+                                {'name': 'Ice House', 'duration': '22 min', 'status': 'red'},
+                                {'name': 'NC State', 'duration': '1h 45m', 'status': 'green'}
+                            ] %}
+                            <div class="travel-time-entry">
+                                <div class="destination-name">{{ dest.name }}</div>
+                                <div class="travel-info">
+                                    <span class="travel-duration">{{ dest.duration }}</span>
+                                    <span class="traffic-indicator {{ dest.status }}"></span>
                                 </div>
                             </div>
-                            <div class="performance-meta">
-                                <div class="performance-stats">
-                                    <span class="grade-average">Avg: {{ assignment.average_grade }}%</span>
-                                    <span class="submission-stats">{{ assignment.submitted_count }}/{{ assignment.total_students }}</span>
-                                </div>
-                                <div class="performance-distribution">
-                                    <span class="grade-high">A: {{ assignment.grade_distribution.A }}</span>
-                                    <span class="grade-medium">B: {{ assignment.grade_distribution.B }}</span>
-                                    <span class="grade-low">C: {{ assignment.grade_distribution.C }}</span>
-                                </div>
-                            </div>
+                            {% endfor %}
                         </div>
-                        {% endfor %}
+                        {% endif %}
                     </div>
-                </div>
-                {% endif %}
-
-            </div>
-        </div>
-
-        <!-- News/Events Ticker -->
-        <div class="news-section">
-            <!-- News Ticker -->
-            <div class="ticker-section">
-                <div class="ticker-label news-ticker-label">Live News</div>
-                <div class="ticker-scroll" id="newsTicker">
-                    {% if articles and articles|length > 0 %}
-                        {% for article in articles %}
-                        <span class="ticker-item">
-                            <span class="news-tag">[{{ article.source }}]</span>
-                            {{ article.title }}
-                        </span>
-                        {% endfor %}
-                    {% else %}
-                        <!-- Fallback news -->
-                        <span class="ticker-item">
-                            <span class="news-tag">[BBC]</span>
-                            Global climate summit reaches breakthrough agreement on carbon reduction targets
-                        </span>
-                        <span class="ticker-item">
-                            <span class="news-tag">[TECH]</span>
-                            New JavaScript framework promises 90% smaller bundle sizes with zero-config setup
-                        </span>
-                        <span class="ticker-item">
-                            <span class="news-tag">[LOCAL]</span>
-                            Winston-Salem announces new downtown development project
-                        </span>
-                    {% endif %}
                 </div>
             </div>
 
-            <!-- Calendar Events Ticker -->
-            <div class="ticker-section calendar-ticker">
-                <div class="ticker-label calendar-ticker-label">Upcoming Events</div>
-                <div class="ticker-scroll calendar-ticker-scroll">
-                    {% if upcoming_events and upcoming_events|length > 0 %}
-                        {% for event in upcoming_events %}
-                        <span class="ticker-item">
-                            <span class="calendar-event">{{ event.date }}:</span>
-                            <span class="event-date">{{ event.summary }}</span>
-                        </span>
-                        {% endfor %}
-                    {% else %}
-                        <!-- Fallback upcoming events -->
-                        <span class="ticker-item">
-                            <span class="calendar-event">Jul 4:</span>
-                            <span class="event-date">Independence Day</span>
-                        </span>
-                        <span class="ticker-item">
-                            <span class="calendar-event">Jul 15:</span>
-                            <span class="event-date">Company All-Hands Meeting</span>
-                        </span>
-                        <span class="ticker-item">
-                            <span class="calendar-event">Jul 20:</span>
-                            <span class="event-date">Team Building Retreat</span>
-                        </span>
-                        <span class="ticker-item">
-                            <span class="calendar-event">Jul 28:</span>
-                            <span class="event-date">Q3 Planning Workshop</span>
-                        </span>
-                    {% endif %}
+            <!-- RSS News Ticker -->
+            <div class="card rss-ticker-card">
+                <div class="ticker-container">
+                    <div class="ticker-label">RSS News</div>
+                    <div class="ticker-content">
+                        <div class="ticker-scroll" id="rssTicker">
+                            {% if articles and articles|length > 0 %}
+                                {% for article in articles %}
+                                <span class="ticker-item">
+                                    <span class="news-source">[{{ article.source }}]</span>
+                                    {{ article.title }}
+                                </span>
+                                {% endfor %}
+                            {% else %}
+                                <!-- Fallback news items -->
+                                <span class="ticker-item">
+                                    <span class="news-source">[BBC]</span>
+                                    Global climate summit reaches breakthrough agreement on carbon reduction targets
+                                </span>
+                                <span class="ticker-item">
+                                    <span class="news-source">[Higher Ed]</span>
+                                    Universities adapt to AI: New policies for academic integrity in the age of ChatGPT
+                                </span>
+                                <span class="ticker-item">
+                                    <span class="news-source">[Chronicle]</span>
+                                    Study finds remote learning impacts vary significantly by student demographics
+                                </span>
+                                <span class="ticker-item">
+                                    <span class="news-source">[BBC]</span>
+                                    Tech giants announce major investments in renewable energy infrastructure
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -871,15 +632,20 @@
                             'line-cap': 'round'
                         },
                         paint: {
-                            'line-width': 2,
                             'line-color': [
                                 'case',
-                                ['==', ['get', 'congestion'], 'low'], '#4CAF50',     // Green for light traffic
-                                ['==', ['get', 'congestion'], 'moderate'], '#FF9800', // Orange for moderate traffic
-                                ['==', ['get', 'congestion'], 'heavy'], '#F44336',    // Red for heavy traffic
-                                ['==', ['get', 'congestion'], 'severe'], '#9C27B0',   // Purple for severe traffic
-                                '#808080' // Gray for unknown
-                            ]
+                                ['==', ['get', 'congestion'], 'low'],
+                                '#4CAF50',
+                                ['==', ['get', 'congestion'], 'moderate'],
+                                '#FFC107',
+                                ['==', ['get', 'congestion'], 'heavy'],
+                                '#FF5722',
+                                ['==', ['get', 'congestion'], 'severe'],
+                                '#B71C1C',
+                                '#757575'
+                            ],
+                            'line-width': 4,
+                            'line-opacity': 0.7
                         }
                     });
 
