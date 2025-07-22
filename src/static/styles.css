@@ -133,7 +133,7 @@ body {
   overflow: hidden;
 }
 
-/* Dashboard Container - 2-Column Layout */
+/* Dashboard Container - Default 2-Column Layout */
 .dashboard-container {
   height: 100vh;
   display: grid;
@@ -144,12 +144,59 @@ body {
   padding: var(--spacing-lg);
 }
 
+/* Landscape Orientation - Command Center Layout */
+.dashboard-container.orientation-landscape {
+  display: grid;
+  grid-template-areas: 
+    "hero hero sidebar"
+    "primary primary sidebar" 
+    "primary primary sidebar"
+    "ticker ticker ticker";
+  grid-template-columns: 1fr 1fr 320px;
+  grid-template-rows: auto 1fr 1fr auto;
+  gap: var(--spacing-md);
+  height: calc(100vh - 2 * var(--spacing-lg));
+  padding: var(--spacing-lg);
+}
+
 /* Column Containers */
 .left-column, .right-column {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
   min-height: 0;
+}
+
+/* Landscape Grid Zones */
+.dashboard-container.orientation-landscape .hero-zone {
+  grid-area: hero;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-container.orientation-landscape .primary-zone {
+  grid-area: primary;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.dashboard-container.orientation-landscape .sidebar-zone {
+  grid-area: sidebar;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  min-height: 0;
+}
+
+.dashboard-container.orientation-landscape .ticker-zone {
+  grid-area: ticker;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  min-height: 80px;
 }
 
 /* Hero Section - Removed (content integrated into columns) */
@@ -1563,6 +1610,81 @@ body {
   gap: 10px;
 }
 
+/* Landscape Layout - Sidebar Zone Optimizations */
+.dashboard-container.orientation-landscape .sidebar-zone .card {
+  flex: 0 0 auto;
+  min-height: 150px;
+}
+
+.dashboard-container.orientation-landscape .three-month-calendar-card {
+  flex: 1;
+  min-height: 200px;
+}
+
+.dashboard-container.orientation-landscape .weather-summary-card {
+  flex: 0 0 120px;
+}
+
+.dashboard-container.orientation-landscape .forecast-card {
+  flex: 1;
+  min-height: 200px;
+}
+
+/* Landscape Layout - Ticker Zone Optimizations */
+.dashboard-container.orientation-landscape .ticker-zone .events-ticker {
+  flex: 0 0 50%;
+  margin-bottom: 0;
+}
+
+.dashboard-container.orientation-landscape .ticker-zone .rss-ticker-card {
+  flex: 0 0 50%;
+  margin-top: 0;
+}
+
+/* Responsive Landscape Layout */
+@media (max-width: 1400px) {
+  .dashboard-container.orientation-landscape {
+    grid-template-columns: 1fr 1fr 280px;
+  }
+}
+
+@media (max-width: 1200px) {
+  .dashboard-container.orientation-landscape {
+    grid-template-areas: 
+      "hero hero hero"
+      "primary primary sidebar" 
+      "ticker ticker ticker";
+    grid-template-columns: 1fr 1fr 250px;
+    grid-template-rows: auto 1fr auto;
+  }
+  
+  .dashboard-container.orientation-landscape .canvas-cards-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .dashboard-container.orientation-landscape {
+    grid-template-areas: 
+      "hero"
+      "primary" 
+      "sidebar"
+      "ticker";
+    grid-template-columns: 1fr;
+    grid-template-rows: auto 2fr 1fr auto;
+  }
+  
+  .dashboard-container.orientation-landscape .sidebar-zone {
+    flex-direction: row;
+    gap: var(--spacing-sm);
+    overflow-x: auto;
+  }
+  
+  .dashboard-container.orientation-landscape .sidebar-zone .card {
+    flex: 0 0 300px;
+  }
+}
+
 /* Responsive grid templates for different screen sizes */
 @media (min-width: 1600px) {
   .orientation-horizontal .content-grid {
@@ -1659,6 +1781,46 @@ body {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--spacing-sm);
+}
+
+/* Landscape Layout - Canvas Cards in Primary Zone */
+.dashboard-container.orientation-landscape .canvas-cards-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-auto-rows: minmax(200px, auto);
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm);
+  overflow-y: auto;
+  height: 100%;
+}
+
+/* Hero Zone - Time/Date Card Landscape Styling */
+.dashboard-container.orientation-landscape .time-date-card {
+  text-align: center;
+  background: var(--bg-card);
+  border: var(--glass-border);
+  box-shadow: var(--card-shadow);
+  backdrop-filter: blur(20px);
+  border-radius: var(--card-radius);
+  padding: var(--spacing-md);
+  min-width: 300px;
+}
+
+.dashboard-container.orientation-landscape .time-date-card .current-time {
+  font-size: 3.2em;
+  font-weight: 200;
+  line-height: 0.9;
+  margin-bottom: 5px;
+  background: linear-gradient(45deg, var(--primary), var(--primary-dark));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dashboard-container.orientation-landscape .time-date-card .current-date {
+  font-size: 1.2em;
+  color: var(--text-secondary);
+  font-weight: 300;
 }
 
 /* Canvas Cards */

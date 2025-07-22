@@ -36,7 +36,7 @@
     "refresh_interval": 900,
     "theme": "dark",
     "show_seconds": false,
-    "orientation": "vertical"
+    "orientation": "landscape"
   },
   "traffic_map": {
     "center_lat": 36.11070732418548,

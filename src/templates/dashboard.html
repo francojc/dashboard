@@ -26,62 +26,17 @@
     </div>
     {% endif %}
 
-    <div class="dashboard-container">
-        <!-- Left Column -->
-        <div class="left-column">
-            <!-- Time/Date Card -->
+    <div class="dashboard-container orientation-landscape">
+        <!-- Hero Zone: Time/Date -->
+        <div class="hero-zone">
             <div class="card time-date-card">
                 <div class="current-time">{{ current_time | default('14:32') }}</div>
                 <div class="current-date">{{ day_name | default('Friday') }}, {{ date_info | default('July 4th, 2025') }}</div>
             </div>
+        </div>
 
-            <!-- 3-Month Calendar Card -->
-            <div class="card three-month-calendar-card">
-                <div class="calendar-grid">
-                    {% if three_month_calendar %}
-                        {% for month in three_month_calendar.months %}
-                        <div class="month-container">
-                            <div class="month-header">{{ month.name }} {{ month.year }}</div>
-                            <div class="mini-calendar">
-                                <!-- Day headers -->
-                                {% for day in three_month_calendar.weekdays %}
-                                <div class="mini-day header">{{ day }}</div>
-                                {% endfor %}
-                                
-                                <!-- Calendar days -->
-                                {% for week in month.weeks %}
-                                    {% for day in week %}
-                                        {% if day.is_other_month %}
-                                            <div class="mini-day other-month"></div>
-                                        {% elif day.is_today %}
-                                            <div class="mini-day today">{{ day.day }}</div>
-                                        {% else %}
-                                            <div class="mini-day">{{ day.day }}</div>
-                                        {% endif %}
-                                    {% endfor %}
-                                {% endfor %}
-                            </div>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <!-- Fallback calendar if data not available -->
-                        <div class="month-container">
-                            <div class="month-header">{{ current_month | default('July') }} {{ current_year | default('2025') }}</div>
-                            <div class="mini-calendar">
-                                <!-- Placeholder calendar -->
-                                {% for day in ['S', 'M', 'T', 'W', 'T', 'F', 'S'] %}
-                                <div class="mini-day header">{{ day }}</div>
-                                {% endfor %}
-                                <!-- Sample days -->
-                                {% for i in range(35) %}
-                                <div class="mini-day{% if i == 19 %} today{% endif %}">{{ (i % 31) + 1 if i < 31 else '' }}</div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    {% endif %}
-                </div>
-            </div>
-
+        <!-- Primary Zone: Academic Content -->
+        <div class="primary-zone">
             <!-- Canvas Cards Container -->
             <div class="canvas-cards-container">
                 <!-- Canvas Assignments Card -->
@@ -195,7 +150,134 @@
                 </div>
                 {% endif %}
             </div>
+        </div>
 
+        <!-- Sidebar Zone: Weather, Calendar, Forecast -->
+        <div class="sidebar-zone">
+            <!-- 3-Month Calendar Card -->
+            <div class="card three-month-calendar-card">
+                <div class="calendar-grid">
+                    {% if three_month_calendar %}
+                        {% for month in three_month_calendar.months %}
+                        <div class="month-container">
+                            <div class="month-header">{{ month.name }} {{ month.year }}</div>
+                            <div class="mini-calendar">
+                                <!-- Day headers -->
+                                {% for day in three_month_calendar.weekdays %}
+                                <div class="mini-day header">{{ day }}</div>
+                                {% endfor %}
+                                
+                                <!-- Calendar days -->
+                                {% for week in month.weeks %}
+                                    {% for day in week %}
+                                        {% if day.is_other_month %}
+                                            <div class="mini-day other-month"></div>
+                                        {% elif day.is_today %}
+                                            <div class="mini-day today">{{ day.day }}</div>
+                                        {% else %}
+                                            <div class="mini-day">{{ day.day }}</div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <!-- Fallback calendar if data not available -->
+                        <div class="month-container">
+                            <div class="month-header">{{ current_month | default('July') }} {{ current_year | default('2025') }}</div>
+                            <div class="mini-calendar">
+                                <!-- Placeholder calendar -->
+                                {% for day in ['S', 'M', 'T', 'W', 'T', 'F', 'S'] %}
+                                <div class="mini-day header">{{ day }}</div>
+                                {% endfor %}
+                                <!-- Sample days -->
+                                {% for i in range(35) %}
+                                <div class="mini-day{% if i == 19 %} today{% endif %}">{{ (i % 31) + 1 if i < 31 else '' }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Weather Summary Card -->
+            <div class="card weather-summary-card">
+                <div class="weather-content">
+                    <div class="weather-main">
+                        <div class="main-temp">{{ weather.temp | default('72') }}°</div>
+                        <div class="weather-desc">{{ weather.description | default('Partly Cloudy') }}</div>
+                        <div class="weather-meta">
+                            Feels like {{ weather.feels_like | default('75') }}°
+                        </div>
+                    </div>
+                    {% if weather and weather.icon %}
+                    <img src="https://openweathermap.org/img/wn/{{ weather.icon }}@4x.png"
+                         alt="{{ weather.description }}" class="weather-icon-large">
+                    {% else %}
+                    <div class="weather-icon-large">⛅</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- 5-Day Forecast Card -->
+            <div class="card forecast-card">
+                <div class="forecast-container">
+                    {% if forecast and forecast|length > 0 %}
+                        {% for day in forecast[:5] %}
+                        <div class="forecast-item">
+                            <div class="forecast-day-name">{{ day.day | default('Today') }}</div>
+                            {% if day.icon %}
+                            <img src="https://openweathermap.org/img/wn/{{ day.icon }}@2x.png"
+                                 alt="{{ day.description }}" class="forecast-icon-small">
+                            {% else %}
+                            <div class="forecast-icon-small">☀️</div>
+                            {% endif %}
+                            <div class="forecast-desc">{{ day.description | default('Sunny') }}</div>
+                            <div class="forecast-temp-container">
+                                <div class="temp-bar-container">
+                                    <div class="temp-bar"
+                                         style="--low: {{ day.low | default('65') }}; --high: {{ day.high | default('78') }}; --week-min: {{ week_temp_min | default('60') }}; --week-range: {{ week_temp_range | default('25') }};"
+                                         aria-label="Low {{ day.low | default('65') }} degrees, High {{ day.high | default('78') }} degrees">
+                                        <span class="visually-hidden">{{ day.low | default('65') }}°</span>
+                                        <span class="visually-hidden">{{ day.high | default('78') }}°</span>
+                                    </div>
+                                </div>
+                                <div class="forecast-temp-range">
+                                    <span class="forecast-low">{{ day.low | default('65') }}°</span>
+                                    <span class="forecast-high">{{ day.high | default('78') }}°</span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <!-- Fallback forecast data -->
+                        <div class="forecast-item">
+                            <div class="forecast-day-name">Today</div>
+                            <div class="forecast-icon-small">☀️</div>
+                            <div class="forecast-desc">Sunny and clear</div>
+                            <div class="forecast-temp-container">
+                                <div class="temp-bar-container">
+                                    <div class="temp-bar"
+                                         style="--low: 65; --high: 78; --week-min: 62; --week-range: 18;"
+                                         aria-label="Low 65 degrees, High 78 degrees">
+                                        <span class="visually-hidden">65°</span>
+                                        <span class="visually-hidden">78°</span>
+                                    </div>
+                                </div>
+                                <div class="forecast-temp-range">
+                                    <span class="forecast-low">65°</span>
+                                    <span class="forecast-high">78°</span>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Ticker Zone: Events and News -->
+        <div class="ticker-zone">
             <!-- Google Calendar Events Ticker -->
             <div class="events-ticker">
                 <div class="ticker-label calendar-ticker-label">Upcoming Events</div>
@@ -222,221 +304,6 @@
                             <span class="event-date">Team Building Retreat</span>
                         </span>
                     {% endif %}
-                </div>
-            </div>
-        </div>
-        <!-- End Left Column -->
-
-        <!-- Right Column -->
-        <div class="right-column">
-            <!-- Weather Summary Card -->
-            <div class="card weather-summary-card">
-                <div class="weather-content">
-                    <div class="weather-main">
-                        <div class="main-temp">{{ weather.temp | default('72') }}°</div>
-                        <div class="weather-desc">{{ weather.description | default('Partly Cloudy') }}</div>
-                        <div class="weather-meta">
-                            Feels like {{ weather.feels_like | default('75') }}°
-                        </div>
-                    </div>
-                    {% if weather and weather.icon %}
-                    <img src="https://openweathermap.org/img/wn/{{ weather.icon }}@4x.png"
-                         alt="{{ weather.description }}" class="weather-icon-large">
-                    {% else %}
-                    <div class="weather-icon-large">⛅</div>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Hourly Weather Card (3-hour increments) -->
-            <div class="card hourly-weather-card">
-                {% if weather and weather.hourly_forecast %}
-                <div class="hourly-chart-container">
-                    <!-- Chart Area -->
-                    <div class="chart-area">
-                        <!-- Rain Probability Bars (Background) -->
-                        <div class="rain-bars">
-                            {% for hour in weather.hourly_forecast %}
-                            <div class="rain-bar" style="height: {{ hour['pop'] }}%%" title="Rain: {{ hour['pop'] }}%%"></div>
-                            {% endfor %}
-                        </div>
-
-                        <!-- Temperature Line Chart (SVG Overlay) -->
-                        <svg class="temp-line-chart" viewBox="0 0 800 200" preserveAspectRatio="none">
-                            {% set temp_values = weather.hourly_forecast | map(attribute='temp') | list %}
-                            {% set min_temp = temp_values | min %}
-                            {% set max_temp = temp_values | max %}
-                            {% set temp_range = max_temp - min_temp if max_temp != min_temp else 10 %}
-
-                        <!-- Generate SVG polyline points -->
-                        {% set ns = namespace(points=[]) %}
-                        {% for hour in weather.hourly_forecast %}
-                            {% set x = (loop.index0 * (800 / (weather.hourly_forecast|length - 1))) | round %}
-                            {% set y = (200 - ((hour.temp - min_temp) / temp_range) * 160 - 20) | round %}
-                            {% set _ = ns.points.append(x ~ ',' ~ y) %}
-                        {% endfor %}
-
-                        <polyline points="{{ ns.points | join(' ') }}"
-                                 fill="none"
-                                 stroke="var(--text-accent)"
-                                 stroke-width="3"
-                                 stroke-linecap="round"
-                                 stroke-linejoin="round"/>
-
-                        <!-- Temperature data points (simple circles as fallback) -->
-                        {% for hour in weather.hourly_forecast %}
-                            {% set x = (loop.index0 * (800 / (weather.hourly_forecast|length - 1))) | round %}
-                            {% set y = (200 - ((hour.temp - min_temp) / temp_range) * 160 - 20) | round %}
-                            <circle cx="{{ x }}" cy="{{ y }}" r="3"
-                                   fill="var(--text-accent)"
-                                   stroke="var(--bg-dark)"
-                                   stroke-width="1"
-                                   opacity="0.7"/>
-                        {% endfor %}
-                    </svg>
-
-                    <!-- Weather Icons Overlay -->
-                    <div class="weather-icons-overlay">
-                        {% for hour in weather.hourly_forecast %}
-                            {% set x_percent = (loop.index0 / (weather.hourly_forecast|length - 1)) * 100 %}
-                            {% set temp_normalized = (hour.temp - min_temp) / temp_range if temp_range > 0 else 0.5 %}
-                            {% set y_percent = (1 - temp_normalized) * 80 + 10 %}
-                            {% if hour.icon %}
-                            <img src="https://openweathermap.org/img/wn/{{ hour.icon }}.png"
-                                 alt="{{ hour.description }}"
-                                 class="weather-icon-chart"
-                                 style="left: {{ x_percent }}%%; top: {{ y_percent }}%%;">
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <!-- X-Axis Labels and Data -->
-                <div class="chart-x-axis">
-                    {% for hour in weather.hourly_forecast %}
-                    <div class="x-axis-item">
-                        <div class="axis-time">{{ hour.time }}</div>
-                        <div class="axis-temp">{{ hour.temp }}°</div>
-                        <div class="axis-details">
-                            <span class="wind">{{ hour.wind_speed }}mph</span>
-                            <span class="humidity">{{ hour.humidity }}%%</span>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% else %}
-            <div class="hourly-chart-container">
-                <p class="no-data">Hourly forecast not available</p>
-            </div>
-            {% endif %}
-            </div>
-
-            <!-- Bottom Right Sub-Grid -->
-            <div class="bottom-right-grid">
-                <!-- 5-Day Forecast Card -->
-                <div class="card forecast-card">
-                    <div class="forecast-container">
-                        {% if forecast and forecast|length > 0 %}
-                            {% for day in forecast[:5] %}
-                            <div class="forecast-item">
-                                <div class="forecast-day-name">{{ day.day | default('Today') }}</div>
-                                {% if day.icon %}
-                                <img src="https://openweathermap.org/img/wn/{{ day.icon }}@2x.png"
-                                     alt="{{ day.description }}" class="forecast-icon-small">
-                                {% else %}
-                                <div class="forecast-icon-small">☀️</div>
-                                {% endif %}
-                                <div class="forecast-desc">{{ day.description | default('Sunny') }}</div>
-                                <div class="forecast-temp-container">
-                                    <div class="temp-bar-container">
-                                        <div class="temp-bar"
-                                             style="--low: {{ day.low | default('65') }}; --high: {{ day.high | default('78') }}; --week-min: {{ week_temp_min | default('60') }}; --week-range: {{ week_temp_range | default('25') }};"
-                                             aria-label="Low {{ day.low | default('65') }} degrees, High {{ day.high | default('78') }} degrees">
-                                            <span class="visually-hidden">{{ day.low | default('65') }}°</span>
-                                            <span class="visually-hidden">{{ day.high | default('78') }}°</span>
-                                        </div>
-                                    </div>
-                                    <div class="forecast-temp-range">
-                                        <span class="forecast-low">{{ day.low | default('65') }}°</span>
-                                        <span class="forecast-high">{{ day.high | default('78') }}°</span>
-                                    </div>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        {% else %}
-                            <!-- Fallback forecast data -->
-                            <div class="forecast-item">
-                                <div class="forecast-day-name">Today</div>
-                                <div class="forecast-icon-small">☀️</div>
-                                <div class="forecast-desc">Sunny and clear</div>
-                                <div class="forecast-temp-container">
-                                    <div class="temp-bar-container">
-                                        <div class="temp-bar"
-                                             style="--low: 65; --high: 78; --week-min: 62; --week-range: 18;"
-                                             aria-label="Low 65 degrees, High 78 degrees">
-                                            <span class="visually-hidden">65°</span>
-                                            <span class="visually-hidden">78°</span>
-                                        </div>
-                                    </div>
-                                    <div class="forecast-temp-range">
-                                        <span class="forecast-low">65°</span>
-                                        <span class="forecast-high">78°</span>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Traffic Map Card -->
-                <div class="card traffic-card">
-                    <div class="traffic-content">
-                        <!-- Map Container -->
-                        <div class="traffic-map-container">
-                            {% if mapbox_map_config and mapbox_map_config.access_token %}
-                            <div id="traffic-map" class="traffic-map"></div>
-                            {% else %}
-                            <div class="traffic-placeholder">
-                                <div class="placeholder-icon">🗺️</div>
-                                <p>Traffic map temporarily unavailable</p>
-                            </div>
-                            {% endif %}
-                        </div>
-
-                        <!-- Travel Times Side Panel -->
-                        {% if travel_times and travel_times|length > 0 %}
-                        <div class="travel-times-panel">
-                            {% for travel_time in travel_times %}
-                            <div class="travel-time-entry">
-                                <div class="destination-name">{{ travel_time.destination }}</div>
-                                <div class="travel-info">
-                                    <span class="travel-duration">{{ travel_time.duration_text }}</span>
-                                    <span class="traffic-indicator {{ travel_time.traffic_status | lower }}"></span>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% else %}
-                        <div class="travel-times-panel">
-                            <!-- Fallback travel times -->
-                            {% for dest in [
-                                {'name': 'Home', 'duration': '12 min', 'status': 'green'},
-                                {'name': 'RJR High', 'duration': '8 min', 'status': 'yellow'},
-                                {'name': 'Ice House', 'duration': '22 min', 'status': 'red'},
-                                {'name': 'NC State', 'duration': '1h 45m', 'status': 'green'}
-                            ] %}
-                            <div class="travel-time-entry">
-                                <div class="destination-name">{{ dest.name }}</div>
-                                <div class="travel-info">
-                                    <span class="travel-duration">{{ dest.duration }}</span>
-                                    <span class="traffic-indicator {{ dest.status }}"></span>
-                                </div>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% endif %}
-                    </div>
                 </div>
             </div>
 
