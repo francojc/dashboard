@@ -13,7 +13,7 @@
     "items_per_feed": 3
   },
   "calendar": {
-    "use_mock_data": false,
+    "use_mock_data": true,
     "calendars": {
       "spanish": {
         "id": "wfu.edu_27uakldtgi42knb0bbcs50flgk@group.calendar.google.com",
@@ -80,7 +80,7 @@
     }
   },
   "canvas": {
-    "use_mock_data": false,
+    "use_mock_data": true,
     "courses": [
       {
         "id": "65908",
